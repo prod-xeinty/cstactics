@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>КОЛЛ.GG — тактики Dust2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&amp;family=Golos+Text:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0F1113}
+a{color:#F2A23C}a:hover{color:#FFC067}
+.wm{-webkit-text-stroke:2px #262B30;color:transparent}
+button{font:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.45}
+input,select,textarea{font:inherit}
+input::placeholder,textarea::placeholder{color:#7D848B}
+</style>
+</helmet>
+<div id="top" style="font-family: 'Golos Text', system-ui, sans-serif; color: #EDEBE6; background: #0F1113; width: 100%">
+
+<sc-if value="{{ showBanner }}" hint-placeholder-val="{{ true }}">
+<div role="status" style="display: flex; align-items: center; gap: 16px; padding: 10px 32px; background: #2A2112; border-bottom: 1px solid #6B4A1C; flex-wrap: wrap">
+<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFC067" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3z"></path><path d="M12 10v4"></path><path d="M12 17.5v.5"></path></svg>
+<p style="margin: 0; flex: 1 1 320px; font-size: 15px; line-height: 1.45; color: #F5D9A8"><strong style="color: #FFC067">Вышла обнова CS2 [дата патча].</strong> Раскидки могут лететь не туда — чекайте гранаты в оффлайне перед каткой. Тактики, которые мы уже проверили на новом патче, отмечены зелёным.</p>
+<button type="button" onClick="{{ closeBanner }}" aria-label="Закрыть предупреждение" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #6B4A1C; border-radius: 4px; color: #F5D9A8"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12"></path><path d="M18 6 6 18"></path></svg></button>
+</div>
+</sc-if>
+
+<header style="display: flex; align-items: center; justify-content: space-between; gap: 20px 28px; padding: 16px 32px; border-bottom: 1px solid #22272B; flex-wrap: wrap">
+<button type="button" onClick="{{ goHome }}" aria-label="КОЛЛ.GG — на главную" style="display: flex; align-items: center; gap: 12px; background: transparent; border: 0; padding: 0; color: #EDEBE6; min-height: 44px">
+<svg aria-hidden="true" width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="#F2A23C" stroke-width="2.2"><circle cx="16" cy="16" r="9"></circle><path d="M16 2v8M16 22v8M2 16h8M22 16h8"></path></svg>
+<span style="font-family: Oswald, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: 0.04em">КОЛЛ<span style="color: #F2A23C">.GG</span></span>
+</button>
+<nav aria-label="Главное меню" style="display: flex; gap: 8px 24px; flex-wrap: wrap; align-items: center; flex: 1 1 auto">
+<sc-for list="{{ navItems }}" as="n" hint-placeholder-count="3">
+<button type="button" onClick="{{ n.pick }}" aria-current="{{ n.current }}" style="min-height: 44px; padding: 0 2px; background: transparent; border: 0; border-bottom: 2px solid {{ n.bd }}; color: {{ n.fg }}; font-weight: 500; font-size: 16px">{{ n.label }}</button>
+</sc-for>
+</nav>
+<div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+<button type="button" onClick="{{ goAdd }}" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; background: transparent; color: #FFC067; border: 1px solid #6B4A1C; border-radius: 4px; font-weight: 600; font-size: 15px"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Своя тактика</button>
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 12px; padding: 5px 6px 5px 6px; border: 1px solid #2C3136; border-radius: 999px">
+<span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; background: #2C3136; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px">Н</span>
+<span style="font-size: 15px; font-weight: 500">[ник]</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #FFC067">FACEIT {{ faceitLevel }} лвл · {{ elo }} эло</span>
+<button type="button" onClick="{{ logout }}" style="min-height: 34px; padding: 0 12px; background: #1E2226; border: 0; border-radius: 999px; color: #A3A9AF; font-size: 13px">Выйти</button>
+</div>
+</sc-if>
+<sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{ login }}" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 20px; background: #EDEBE6; color: #121416; border: 0; border-radius: 4px; font-weight: 600; font-size: 15px"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"></path></svg>Войти через Steam</button>
+</sc-if>
+</div>
+</header>
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div>
+<section aria-label="Топ тактик" style="padding: 32px">
+<div style="position: relative; border: 1px solid #2C3136; background: #15181B; border-radius: 6px; min-height: 640px; padding: 40px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px; overflow: hidden">
+<div class="wm" aria-hidden="true" style="position: absolute; right: -24px; bottom: -70px; font-family: Oswald, sans-serif; font-weight: 700; font-size: 340px; line-height: 1; pointer-events: none">DUST2</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; position: relative; flex-wrap: wrap">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.08em; color: #A3A9AF">ТОП НЕДЕЛИ · {{ slideLabel }}</span>
+<div style="display: flex; gap: 8px">
+<button type="button" onClick="{{ prev }}" aria-label="Предыдущая тактика" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #1E2226; border: 1px solid #2C3136; border-radius: 4px; color: #EDEBE6"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></button>
+<button type="button" onClick="{{ next }}" aria-label="Следующая тактика" style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: #1E2226; border: 1px solid #2C3136; border-radius: 4px; color: #EDEBE6"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"></path></svg></button>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 48px; position: relative; flex: 1 1 auto">
+<div style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #262B30; color: #EDEBE6">DUST2</span>
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: {{ cur.sideBg }}; color: {{ cur.sideFg }}">ЗА {{ cur.side }}</span>
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #262B30; color: #EDEBE6">{{ cur.sizeLabel }}</span>
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #262B30; color: #EDEBE6">{{ cur.eco }}</span>
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #262B30; color: #FFC067">{{ cur.diff }}</span>
+<span style="padding: 6px 10px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 13px; background: {{ cur.verBg }}; color: {{ cur.verFg }}">{{ cur.verLabel }}</span>
+</div>
+<h1 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 72px; line-height: 1; text-transform: uppercase; letter-spacing: 0.01em">{{ cur.title }}</h1>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; max-width: 640px">
+<sc-for list="{{ cur.quickList }}" as="q" hint-placeholder-count="3">
+<li style="display: flex; gap: 16px; align-items: baseline; font-size: 20px; line-height: 1.4"><span style="font-family: 'JetBrains Mono', monospace; font-size: 15px; color: #F2A23C; flex: 0 0 auto">0{{ q.n }}</span><span>{{ q.text }}</span></li>
+</sc-for>
+</ol>
+<div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px">
+<a href="#tactics" style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 24px; background: #F2A23C; color: #141414; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 16px">Полный разбор</a>
+<button type="button" style="min-height: 48px; padding: 0 24px; background: transparent; color: #EDEBE6; border: 1px solid #3A4046; border-radius: 4px; font-weight: 600; font-size: 16px">Оценить тактику</button>
+</div>
+</div>
+<div style="flex: 1 1 340px; min-width: 0; align-self: flex-start; background: #0F1113; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">Насколько работает</span>
+<span style="font-size: 14px; color: #A3A9AF">Оценки игроков по уровням FACEIT</span>
+</div>
+<sc-for list="{{ cur.scales }}" as="s" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 4px; border: 1px solid {{ s.border }}">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+<span style="font-weight: 600; font-size: 16px">{{ s.label }} <span style="font-family: 'JetBrains Mono', monospace; font-weight: 500; font-size: 13px; color: #A3A9AF">{{ s.range }}</span> <span style="font-size: 12px; color: #FFC067">{{ s.mine }}</span></span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 24px">{{ s.score }}</span>
+</div>
+<div style="height: 6px; background: #262B30; border-radius: 3px; overflow: hidden"><div style="height: 6px; width: {{ s.pct }}%; background: #F2A23C"></div></div>
+<span style="font-size: 13px; color: #A3A9AF">{{ s.votes }}</span>
+</div>
+</sc-for>
+<p style="margin: 0; font-size: 13px; line-height: 1.5; color: #A3A9AF">Оценивать могут только те, кто зашёл через Steam. Голос падает в шкалу твоего лвла на FACEIT.</p>
+</div>
+</div>
+<div style="display: flex; gap: 10px; position: relative">
+<sc-for list="{{ dots }}" as="d" hint-placeholder-count="4">
+<button type="button" onClick="{{ d.pick }}" aria-label="{{ d.label }}" style="width: 44px; height: 24px; display: flex; align-items: center; background: transparent; border: 0; padding: 0"><span style="display: block; width: 44px; height: 4px; border-radius: 2px; background: {{ d.bg }}"></span></button>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section id="tactics" style="padding: 32px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 44px; text-transform: uppercase">Тактики на Dust2</h2>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #A3A9AF">{{ countLabel }}</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px 40px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #A3A9AF">Сторона</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ sideChips }}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{ c.pick }}" style="min-height: 44px; padding: 0 16px; border-radius: 4px; font-size: 15px; font-weight: 500; background: {{ c.bg }}; color: {{ c.fg }}; border: 1px solid {{ c.bd }}">{{ c.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #A3A9AF">Состав</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ sizeChips }}" as="c" hint-placeholder-count="4">
+<button type="button" onClick="{{ c.pick }}" style="min-height: 44px; padding: 0 16px; border-radius: 4px; font-size: 15px; font-weight: 500; background: {{ c.bg }}; color: {{ c.fg }}; border: 1px solid {{ c.bd }}">{{ c.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #A3A9AF">Оценки и сортировка для</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap">
+<sc-for list="{{ levelChips }}" as="c" hint-placeholder-count="3">
+<button type="button" onClick="{{ c.pick }}" style="min-height: 44px; padding: 0 16px; border-radius: 4px; font-size: 15px; font-weight: 500; background: {{ c.bg }}; color: {{ c.fg }}; border: 1px solid {{ c.bd }}">{{ c.label }}</button>
+</sc-for>
+</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px">
+<sc-for list="{{ list }}" as="t" hint-placeholder-count="6">
+<article style="background: #171A1D; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: {{ t.sideBg }}; color: {{ t.sideFg }}">ЗА {{ t.side }}</span>
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #262B30; color: #EDEBE6">{{ t.sizeLabel }}</span>
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #262B30; color: #EDEBE6">{{ t.eco }}</span>
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #262B30; color: #FFC067">{{ t.diff }}</span>
+</div>
+<h3 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 600; font-size: 28px; line-height: 1.1; text-transform: uppercase">{{ t.title }}</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #C3C7CB">{{ t.short }}</p>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: auto">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-size: 13px; color: #A3A9AF">{{ levelLabel }}</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px">{{ t.rate.score }}</span>
+</div>
+<div style="height: 6px; background: #262B30; border-radius: 3px; overflow: hidden"><div style="height: 6px; width: {{ t.rate.pct }}%; background: #F2A23C"></div></div>
+<span style="font-size: 13px; color: #A3A9AF">{{ t.rate.votes }}</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 14px; border-top: 1px solid #262B30">
+<span style="padding: 4px 8px; border-radius: 3px; font-size: 12px; background: {{ t.verBg }}; color: {{ t.verFg }}">{{ t.verLabel }}</span>
+<a href="#tactics" style="display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; font-size: 15px; text-decoration: none">Разбор →</a>
+</div>
+</article>
+</sc-for>
+</div>
+<sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 0; padding: 40px; text-align: center; border: 1px dashed #3A4046; border-radius: 6px; color: #A3A9AF; font-size: 16px">Под такой фильтр тактик пока нет — скоро докинем.</p>
+</sc-if>
+</section>
+
+<section id="clutch" style="padding: 32px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 44px; text-transform: uppercase">Клатчи</h2>
+<p style="margin: 0; font-size: 17px; color: #A3A9AF; max-width: 640px">Не «лучшая позиция», а конкретная ситуация: сколько врагов, где бомба, где ты.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px">
+<article style="background: #171A1D; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #FFC067">1V2 · БОМБА НА Б · ЗА T</span>
+<h3 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 600; font-size: 26px; text-transform: uppercase">Остался один после планта</h3>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.45">
+<div><dt style="color: #A3A9AF; font-size: 13px">Где встать</dt><dd style="margin: 0">Не на бомбе. Уходи в задний плент, чтобы двое не брали тебя разом.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Что слушать</dt><dd style="margin: 0">Шаги с окна и дверей Б — ловишь их по одному.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Граната</dt><dd style="margin: 0">Молик на бомбу по звуку дефьюза.</dd></div>
+</dl>
+</article>
+<article style="background: #171A1D; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #9CC6EE">1V1 · РЕТЕЙК A · ЗА CT</span>
+<h3 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 600; font-size: 26px; text-transform: uppercase">Бомба на дефолте A</h3>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.45">
+<div><dt style="color: #A3A9AF; font-size: 13px">Откуда заходить</dt><dd style="margin: 0">С ката, а не с CT — оттуда тебя ждут.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Что слушать</dt><dd style="margin: 0">Где T: на лонге или зажался в гусе.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Граната</dt><dd style="margin: 0">Смок на бомбу и дефай под ним, если T далеко.</dd></div>
+</dl>
+</article>
+<article style="background: #171A1D; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #FFC067">1V3 · БОМБА НА A · ЗА T</span>
+<h3 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 600; font-size: 26px; text-transform: uppercase">Не держи сайт</h3>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.45">
+<div><dt style="color: #A3A9AF; font-size: 13px">Где встать</dt><dd style="margin: 0">Отходи на лонг и жди, пока сядут дефать.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Что слушать</dt><dd style="margin: 0">Звук дефьюза — это твой сигнал на выход.</dd></div>
+<div><dt style="color: #A3A9AF; font-size: 13px">Граната</dt><dd style="margin: 0">Флешка за угол на крест перед выходом.</dd></div>
+</dl>
+</article>
+</div>
+</section>
+
+<section style="padding: 0 32px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 28px 32px; background: #1A1610; border: 1px solid #4A3618; border-radius: 6px">
+<div style="display: flex; flex-direction: column; gap: 6px; flex: 1 1 360px">
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 28px; text-transform: uppercase">Есть своя тактика?</span>
+<span style="font-size: 16px; color: #C9B48F">Закинь по шаблону с видосом — проверим в игре и выложим с твоим ником.</span>
+</div>
+<button type="button" onClick="{{ goAdd }}" style="min-height: 48px; padding: 0 24px; background: #F2A23C; color: #141414; border: 0; border-radius: 4px; font-weight: 600; font-size: 16px">Добавить тактику</button>
+</div>
+</section>
+
+<section id="rating" style="padding: 32px; display: flex; flex-direction: column; gap: 24px">
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 44px; text-transform: uppercase">Как работает оценка</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px">
+<div style="border-top: 3px solid #F2A23C; padding-top: 18px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F2A23C">01</span>
+<h3 style="margin: 0; font-size: 20px; font-weight: 600">Заходишь через Steam</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A3A9AF">Без регистрации и паролей — просто логин через Steam.</p>
+</div>
+<div style="border-top: 3px solid #F2A23C; padding-top: 18px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F2A23C">02</span>
+<h3 style="margin: 0; font-size: 20px; font-weight: 600">Подтягиваем твой FACEIT</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A3A9AF">Находим профиль по Steam и берём лвл и эло. Апнул лвл — голос переедет в новую шкалу.</p>
+</div>
+<div style="border-top: 3px solid #F2A23C; padding-top: 18px; display: flex; flex-direction: column; gap: 8px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #F2A23C">03</span>
+<h3 style="margin: 0; font-size: 20px; font-weight: 600">Ставишь оценку</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #A3A9AF">Голос идёт в шкалу твоего уровня: лоу 1–3, мид 4–7, хай 8–10. Нет FACEIT — отдельная шкала.</p>
+</div>
+</div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{ isForMe }}" hint-placeholder-val="{{ false }}">
+<section aria-label="Тактики под твоё эло" style="padding: 40px 32px; display: flex; flex-direction: column; gap: 32px">
+<sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 48px; border: 1px solid #2C3136; border-radius: 6px; background: #15181B; max-width: 720px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.08em; color: #A3A9AF">ПОД ТВОЙ УРОВЕНЬ</span>
+<h1 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 48px; line-height: 1.05; text-transform: uppercase">Зайди — и мы соберём тактики под твоё эло</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.5; color: #A3A9AF">Логинишься через Steam, мы находим твой FACEIT и показываем только то, что реально заходит у игроков твоего уровня. Без копания во всём каталоге.</p>
+<button type="button" onClick="{{ login }}" style="min-height: 48px; padding: 0 24px; background: #EDEBE6; color: #121416; border: 0; border-radius: 4px; font-weight: 600; font-size: 16px">Войти через Steam</button>
+</div>
+</sc-if>
+<sc-if value="{{ loggedIn }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid #22272B">
+<div style="display: flex; flex-direction: column; gap: 12px; flex: 1 1 520px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.08em; color: #FFC067">ПОД ТВОЙ УРОВЕНЬ · {{ myBandLabel }}</span>
+<h1 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 64px; line-height: 1; text-transform: uppercase">Тактики для {{ faceitLevel }} лвл</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.5; color: #A3A9AF; max-width: 680px">Сортируем по оценкам игроков {{ myBandRange }}. Чем выше цифра — тем чаще тактика выносит раунд на твоём уровне.</p>
+</div>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<div style="padding: 16px 20px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 120px">
+<span style="font-size: 13px; color: #A3A9AF">Уровень</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 32px; color: #FFC067">{{ faceitLevel }}</span>
+</div>
+<div style="padding: 16px 20px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 120px">
+<span style="font-size: 13px; color: #A3A9AF">Эло</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 32px">{{ elo }}</span>
+</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 36px; text-transform: uppercase">Заходят на твоём уровне</h2>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #A3A9AF">оценка 4.0 и выше</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px">
+<sc-for list="{{ forMeGood }}" as="t" hint-placeholder-count="3">
+<article style="background: #171A1D; border: 1px solid #2C3136; border-radius: 6px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: {{ t.sideBg }}; color: {{ t.sideFg }}">ЗА {{ t.side }}</span>
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #262B30; color: #EDEBE6">{{ t.sizeLabel }}</span>
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: #262B30; color: #FFC067">{{ t.diff }}</span>
+</div>
+<span style="font-family: Oswald, sans-serif; font-weight: 700; font-size: 34px; line-height: 1; color: #FFC067">{{ t.mine.score }}</span>
+</div>
+<h3 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 600; font-size: 28px; line-height: 1.1; text-transform: uppercase">{{ t.title }}</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #C3C7CB">{{ t.short }}</p>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid #262B30">
+<span style="font-size: 13px; color: #A3A9AF">{{ t.mine.votes }} от твоего уровня</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A3A9AF">{{ t.bandsLine }}</span>
+</div>
+</article>
+</sc-for>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 28px; text-transform: uppercase; color: #C3C7CB">Пока не заходят или мало голосов</h2>
+<div style="display: flex; flex-direction: column; border: 1px solid #22272B; border-radius: 6px">
+<sc-for list="{{ forMeRest }}" as="t" hint-placeholder-count="3">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 16px 20px; border-bottom: 1px solid #22272B">
+<div style="display: flex; align-items: center; gap: 12px; flex: 1 1 320px">
+<span style="padding: 4px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: {{ t.sideBg }}; color: {{ t.sideFg }}">ЗА {{ t.side }}</span>
+<span style="font-weight: 600; font-size: 17px">{{ t.title }}</span>
+</div>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #A3A9AF">{{ t.bandsLine }}</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; min-width: 120px; text-align: right">{{ t.mine.short }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</section>
+</sc-if>
+
+<sc-if value="{{ isAdd }}" hint-placeholder-val="{{ false }}">
+<section aria-label="Добавить свою тактику" style="padding: 40px 32px; display: flex; flex-direction: column; gap: 28px; max-width: 980px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.08em; color: #FFC067">СВОЯ ТАКТИКА</span>
+<h1 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 56px; line-height: 1; text-transform: uppercase">Закинь тактику по шаблону</h1>
+<p style="margin: 0; font-size: 17px; line-height: 1.5; color: #A3A9AF; max-width: 700px">Пиши на сленге, как в войсе. Гранаты — словами: что, куда, по какому триггеру и зачем. Перед публикацией мы прогоним тактику в игре.</p>
+</div>
+
+<sc-if value="{{ loggedOut }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; background: #15181B">
+<span style="font-size: 16px; flex: 1 1 360px">Чтобы добавить тактику, зайди через Steam — так тактика будет подписана твоим ником и FACEIT-уровнем.</span>
+<button type="button" onClick="{{ login }}" style="min-height: 48px; padding: 0 24px; background: #EDEBE6; color: #121416; border: 0; border-radius: 4px; font-weight: 600; font-size: 16px">Войти через Steam</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ showSuccess }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display: flex; flex-direction: column; gap: 16px; padding: 40px; border: 1px solid #2E5A3A; border-radius: 6px; background: #13261A">
+<span style="font-family: Oswald, sans-serif; font-weight: 700; font-size: 36px; text-transform: uppercase; color: #8FD19E">Тактика ушла на проверку</span>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #C8E6CF">Прогоним её в игре и выложим с твоим ником. Если что-то не так — напишем в профиле.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" onClick="{{ resetForm }}" style="min-height: 48px; padding: 0 22px; background: #8FD19E; color: #0F1F14; border: 0; border-radius: 4px; font-weight: 600; font-size: 16px">Добавить ещё</button>
+<button type="button" onClick="{{ goHome }}" style="min-height: 48px; padding: 0 22px; background: transparent; color: #C8E6CF; border: 1px solid #2E5A3A; border-radius: 4px; font-weight: 600; font-size: 16px">На главную</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ showForm }}" hint-placeholder-val="{{ true }}">
+<form onSubmit="{{ submit }}" novalidate="novalidate" style="display: flex; flex-direction: column; gap: 28px">
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 18px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">1. Основное</legend>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Название тактики *
+<input name="title" type="text" placeholder="Например: Сплит A через лонг и кат" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid {{ titleBorder }}; border-radius: 4px; color: #EDEBE6; font-size: 16px">
+</label>
+<sc-if value="{{ hasFormErr }}" hint-placeholder-val="{{ false }}">
+<span role="alert" style="font-size: 14px; color: #F0A08A">{{ formErr }}</span>
+</sc-if>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Карта
+<select name="map" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px"><option value="dust2">Dust2</option><option value="mirage" disabled="disabled">Mirage — скоро</option><option value="inferno" disabled="disabled">Inferno — скоро</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Сторона
+<select name="side" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px"><option value="T">За T</option><option value="CT">За CT</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Состав
+<select name="size" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px"><option value="2">Дуо</option><option value="3">Тройка</option><option value="4">Четверо</option><option value="5">Фулл стак</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Экономика
+<select name="eco" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px"><option value="full">Фулл бай</option><option value="force">Форс</option><option value="eco">Эко</option><option value="any">Любая</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Сложность
+<select name="diff" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px"><option value="1">★☆☆ — заколил и пошёл</option><option value="2">★★☆ — надо сыграться</option><option value="3">★★★ — полный разбор</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Версия игры
+<input name="version" type="text" placeholder="патч от [дата]" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px">
+</label>
+</div>
+<label style="display: flex; align-items: center; gap: 12px; font-size: 16px; min-height: 44px"><input name="spawnDependent" type="checkbox" style="width: 22px; height: 22px; accent-color: #F2A23C">Роли зависят от спавна</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Колл — одна фраза для тимы
+<input name="call" type="text" placeholder="Трое лонг, двое кат, заходим вместе по смоку на крест" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px">
+</label>
+</fieldset>
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 14px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">2. Быстрая версия</legend>
+<span style="font-size: 14px; color: #A3A9AF">Максимум 4 строки — чтобы прочитать во фризтайме.</span>
+<sc-for list="{{ quickRows }}" as="r" hint-placeholder-count="3">
+<label style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #A3A9AF"><span style="font-family: 'JetBrains Mono', monospace; color: #F2A23C; width: 24px">0{{ r.n }}</span>
+<input name="quick" type="text" placeholder="{{ r.ph }}" aria-label="Строка {{ r.n }}" style="flex: 1 1 auto; min-width: 0; min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px">
+</label>
+</sc-for>
+<button type="button" onClick="{{ addQuick }}" disabled="{{ quickFull }}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; background: transparent; color: #FFC067; border: 1px dashed #6B4A1C; border-radius: 4px; font-size: 15px">+ строка</button>
+</fieldset>
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 14px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">3. Роли по спавну</legend>
+<sc-for list="{{ roleRows }}" as="r" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #22272B">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Спавн {{ r.n }}
+<select name="roleSpawn" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px"><option>Ближние к лонгу</option><option>Центр</option><option>Ближние к миду</option><option>CT: ближние к A</option><option>CT: центр</option><option>CT: ближние к Б</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Роль
+<input name="roleTask" type="text" placeholder="первый на выход с лонга" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Гранаты
+<input name="roleNades" type="text" placeholder="флешка, смок на CT" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+</div>
+</sc-for>
+<button type="button" onClick="{{ addRole }}" disabled="{{ roleFull }}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; background: transparent; color: #FFC067; border: 1px dashed #6B4A1C; border-radius: 4px; font-size: 15px">+ роль</button>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Если на нужном спавне никого
+<input name="roleFallback" type="text" placeholder="смок на CT забирает игрок с центра" style="min-height: 46px; padding: 0 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px">
+</label>
+</fieldset>
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 14px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">4. Гранаты</legend>
+<span style="font-size: 14px; color: #A3A9AF">Без лайнапов — словами. Триггер лучше привязывать к действию, а не к секундам.</span>
+<sc-for list="{{ nadeRows }}" as="r" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #22272B">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Кто
+<input name="nadeWho" type="text" placeholder="лонг 2" style="min-height: 46px; padding: 0 12px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Что
+<select name="nadeType" style="min-height: 46px; padding: 0 10px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px"><option>Смок</option><option>Флешка</option><option>Молик</option><option>Хаешка</option><option>Декой</option></select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Куда
+<input name="nadeTo" type="text" placeholder="крест" style="min-height: 46px; padding: 0 12px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Когда (триггер)
+<input name="nadeWhen" type="text" placeholder="после смока на CT" style="min-height: 46px; padding: 0 12px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #A3A9AF">Зачем
+<input name="nadeWhy" type="text" placeholder="пройти на сайт с лонга" style="min-height: 46px; padding: 0 12px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 15px">
+</label>
+</div>
+</sc-for>
+<button type="button" onClick="{{ addNade }}" disabled="{{ nadeFull }}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; background: transparent; color: #FFC067; border: 1px dashed #6B4A1C; border-radius: 4px; font-size: 15px">+ граната</button>
+</fieldset>
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 16px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">5. Разбор</legend>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Если пошло не так
+<textarea name="fallback" rows="3" placeholder="Лонг не отдают → двое с ката давят первыми" style="padding: 12px 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px; resize: vertical"></textarea>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Пост-плант
+<textarea name="postplant" rows="3" placeholder="Один на лонге, один у машины, один держит кат" style="padding: 12px 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px; resize: vertical"></textarea>
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #A3A9AF">Чем контрят
+<textarea name="counter" rows="2" placeholder="Агрессивный CT на лонге ломает выход" style="padding: 12px 14px; background: #0F1113; border: 1px solid #3A4046; border-radius: 4px; color: #EDEBE6; font-size: 16px; resize: vertical"></textarea>
+</label>
+</fieldset>
+
+<fieldset style="margin: 0; padding: 24px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 14px">
+<legend style="padding: 0 8px; font-family: Oswald, sans-serif; font-weight: 600; font-size: 22px; text-transform: uppercase">6. Видео</legend>
+<span style="font-size: 14px; color: #A3A9AF">До 10 МБ, mp4 или webm. Хватит 20–30 секунд в 720p — заход или самый сложный момент.</span>
+<label style="display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 24px; border: 1px dashed {{ videoBorder }}; border-radius: 6px; background: #121417; font-size: 15px; color: #EDEBE6">
+<span style="font-weight: 600">Выбрать видео</span>
+<input name="video" type="file" accept="video/mp4,video/webm" onChange="{{ onVideo }}" style="font-size: 15px; color: #A3A9AF">
+</label>
+<sc-if value="{{ hasVideo }}" hint-placeholder-val="{{ false }}">
+<span role="status" style="font-size: 14px; color: #8FD19E">Загружено: {{ videoName }} · {{ videoSize }}</span>
+</sc-if>
+<sc-if value="{{ hasVideoErr }}" hint-placeholder-val="{{ false }}">
+<span role="alert" style="font-size: 14px; color: #F0A08A">{{ videoErr }}</span>
+</sc-if>
+</fieldset>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+<button type="submit" style="min-height: 52px; padding: 0 28px; background: #F2A23C; color: #141414; border: 0; border-radius: 4px; font-weight: 600; font-size: 17px">Отправить на проверку</button>
+<span style="font-size: 14px; color: #A3A9AF; flex: 1 1 320px">После проверки тактика появится в каталоге с меткой «от игрока» и твоим ником.</span>
+</div>
+</form>
+</sc-if>
+</section>
+</sc-if>
+
+<footer style="padding: 32px; border-top: 1px solid #22272B; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 14px; color: #A3A9AF">
+<span>КОЛЛ.GG — фан-проект, не связан с Valve и FACEIT.</span>
+<span>Сейчас на сайте: Dust2. Остальные карты — скоро.</span>
+</footer>
+
+<sc-if value="{{ showLoginModal }}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; z-index: 50; background: rgba(8, 9, 10, 0.78); display: flex; align-items: center; justify-content: center; padding: 16px">
+<div role="dialog" aria-modal="true" aria-label="Нашли твой FACEIT" style="width: 100%; max-width: 520px; background: #171A1D; border: 1px solid #3A4046; border-radius: 8px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #8FD19E">ВХОД ЧЕРЕЗ STEAM · ОК</span>
+<h2 style="margin: 0; font-family: Oswald, sans-serif; font-weight: 700; font-size: 38px; line-height: 1.05; text-transform: uppercase">Нашли твой FACEIT</h2>
+<div style="display: flex; gap: 12px">
+<div style="flex: 1 1 0; padding: 16px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; color: #A3A9AF">Уровень</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 34px; color: #FFC067">{{ faceitLevel }}</span>
+</div>
+<div style="flex: 1 1 0; padding: 16px; border: 1px solid #2C3136; border-radius: 6px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; color: #A3A9AF">Эло</span>
+<span style="font-family: Oswald, sans-serif; font-weight: 600; font-size: 34px">{{ elo }}</span>
+</div>
+</div>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; color: #C3C7CB">Собрали отдельную подборку: тактики, которые лучше всего заходят у игроков {{ myBandRange }}. Теперь не надо копаться во всём каталоге.</p>
+<div style="display: flex; gap: 12px; flex-wrap: wrap">
+<button type="button" onClick="{{ goForMeFromModal }}" style="flex: 1 1 220px; min-height: 48px; padding: 0 20px; background: #F2A23C; color: #141414; border: 0; border-radius: 4px; font-weight: 600; font-size: 16px">Показать тактики под меня</button>
+<button type="button" onClick="{{ closeModal }}" style="min-height: 48px; padding: 0 20px; background: transparent; color: #EDEBE6; border: 1px solid #3A4046; border-radius: 4px; font-weight: 600; font-size: 16px">Потом</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"loggedIn":{"editor":"boolean","default":false,"section":"Демо"},"faceitLevel":{"editor":"int","default":7,"min":1,"max":10,"section":"Демо"},"elo":{"editor":"int","default":1650,"min":100,"max":4000,"section":"Демо"},"$preview":{"width":1440,"height":2900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      slide: 0, side: "all", size: "all", level: null, banner: true,
+      screen: "home", demoLogin: false, loginModal: false,
+      quickN: 3, roleN: 3, nadeN: 2,
+      video: null, videoErr: null, formErr: null, submitted: false
+    };
+  }
+
+  tactics() {
+    return [
+      { id: "a-split", title: "Сплит A: лонг + кат", side: "T", size: 5, sizeLabel: "5 ЧЕЛ", eco: "ФУЛЛ БАЙ", diff: "★★☆", fresh: true, featured: true,
+        quick: ["Трое забирают лонг, двое ждут в нижнем миде", "Смок на CT и на крест, флешка над дверями лонга", "Встал смок на крест — заходим с двух сторон разом"],
+        short: "Трое лонг, двое кат, заход вместе по смоку на крест.", r: { low: [4.6, 128], mid: [4.2, 94], high: [3.6, 31] } },
+      { id: "b-rush", title: "Раш Б через туннели", side: "T", size: 5, sizeLabel: "5 ЧЕЛ", eco: "ФОРС", diff: "★☆☆", fresh: true, featured: true,
+        quick: ["Все пятеро в верхний туннель", "Смок в окно и на двери Б, две флешки над выходом", "Влетаем толпой, бомбу на задний плент"],
+        short: "Все в туннели, смоки в окно и на двери, влетаем толпой.", r: { low: [4.7, 211], mid: [3.9, 140], high: [2.8, 47] } },
+      { id: "duo-mid", title: "Дуо: забираем мид", side: "T", size: 2, sizeLabel: "ДУО", eco: "ЛЮБАЯ", diff: "★☆☆", fresh: false, featured: true,
+        quick: ["Первый с T-спавна кидает смок на иксбокс", "Второй под смоком прыгает на кат", "Даёте инфу по A — тима решает, куда идти"],
+        short: "Смок на иксбокс, один прыгает на кат и коллит инфу.", r: { low: [4.4, 86], mid: [4.3, 72], high: [4.0, 19] } },
+      { id: "fake-a", title: "Фейк A → заход Б", side: "T", size: 5, sizeLabel: "5 ЧЕЛ", eco: "ФУЛЛ БАЙ", diff: "★★★", fresh: false, featured: true,
+        quick: ["Двое шумят на лонге и кидают гранаты на A", "Трое тихо ждут в верхнем туннеле", "КТ ротнулись на A — заходим на Б"],
+        short: "Двое шумят на лонге, трое тихо ждут ротацию и идут на Б.", r: { low: [3.8, 40], mid: [4.4, 58], high: [4.5, 3] } },
+      { id: "ct-retake-b", title: "Ретейк Б втроём", side: "CT", size: 3, sizeLabel: "3 ЧЕЛ", eco: "ФУЛЛ БАЙ", diff: "★★☆", fresh: true, featured: false,
+        quick: ["Собираемся у дверей Б и в окне", "Смок на выход из туннеля, флешки через двери", "Заходим с дверей и окна одновременно"],
+        short: "Смок на туннель, флешки через двери, заход с двух сторон.", r: { low: [4.1, 52], mid: [4.0, 61], high: [3.9, 22] } },
+      { id: "ct-mid-aggro", title: "Агро мид на старте", side: "CT", size: 2, sizeLabel: "ДУО", eco: "ЛЮБАЯ", diff: "★★☆", fresh: false, featured: false,
+        quick: ["Первый пикает мид с мидовых дверей на старте", "Второй страхует с ката", "Есть фраг или нет — откат на позиции"],
+        short: "Ранний пик мида с дверей и откат, второй страхует с ката.", r: { low: [3.6, 33], mid: [4.1, 44], high: [4.3, 15] } }
+    ];
+  }
+
+  plural(n, one, few, many) {
+    const a = n % 10, b = n % 100;
+    if (a === 1 && b !== 11) return one;
+    if (a >= 2 && a <= 4 && (b < 12 || b > 14)) return few;
+    return many;
+  }
+
+  rate(v) {
+    const ok = v[1] >= 5;
+    return {
+      ok: ok,
+      num: ok ? v[0] : -1,
+      score: ok ? v[0].toFixed(1) : "—",
+      short: ok ? v[0].toFixed(1) : "мало голосов",
+      votes: ok ? v[1] + " " + this.plural(v[1], "голос", "голоса", "голосов") : "мало голосов",
+      pct: ok ? Math.round(v[0] / 5 * 100) : 0
+    };
+  }
+
+  decorate(t) {
+    const isT = t.side === "T";
+    const s = (k) => (t.r[k][1] >= 5 ? t.r[k][0].toFixed(1) : "—");
+    return Object.assign({}, t, {
+      sideBg: isT ? "#3A2A12" : "#142536",
+      sideFg: isT ? "#FFC067" : "#9CC6EE",
+      verLabel: t.fresh ? "Чекнуто на новом патче" : "Не чекали после обновы",
+      verBg: t.fresh ? "#13261A" : "#2E1C12",
+      verFg: t.fresh ? "#8FD19E" : "#F0B38A",
+      bandsLine: "Лоу " + s("low") + " · Мид " + s("mid") + " · Хай " + s("high")
+    });
+  }
+
+  chip(on) {
+    return on
+      ? { bg: "#F2A23C", fg: "#141414", bd: "#F2A23C" }
+      : { bg: "transparent", fg: "#EDEBE6", bd: "#3A4046" };
+  }
+
+  go(screen, extra) {
+    this.setState(Object.assign({ screen: screen }, extra || {}));
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  renderVals() {
+    const st = this.state;
+    const loggedIn = (this.props.loggedIn ?? false) || st.demoLogin;
+    const faceitLevel = this.props.faceitLevel ?? 7;
+    const elo = this.props.elo ?? 1650;
+    const myLevel = faceitLevel <= 3 ? "low" : faceitLevel <= 7 ? "mid" : "high";
+    const bandNames = { low: "ЛОУ 1–3", mid: "МИД 4–7", high: "ХАЙ 8–10" };
+    const bandRanges = { low: "1–3 лвл", mid: "4–7 лвл", high: "8–10 лвл" };
+    const level = st.level || (loggedIn ? myLevel : "mid");
+
+    const all = this.tactics().map((t) => this.decorate(t));
+    const featured = all.filter((t) => t.featured);
+    const n = featured.length;
+    const slide = ((st.slide % n) + n) % n;
+    const f = featured[slide];
+
+    const scaleDefs = [["low", "Лоу", "1–3 лвл"], ["mid", "Мид", "4–7 лвл"], ["high", "Хай", "8–10 лвл"]];
+    const cur = Object.assign({}, f, {
+      quickList: f.quick.map((text, i) => ({ n: i + 1, text: text })),
+      scales: scaleDefs.map((d) => {
+        const mine = loggedIn && d[0] === myLevel;
+        return Object.assign({ label: d[1], range: d[2], mine: mine ? "· твой лвл" : "", border: mine ? "#F2A23C" : "#262B30" }, this.rate(f.r[d[0]]));
+      })
+    });
+
+    const dots = featured.map((t, i) => ({
+      label: "Тактика " + (i + 1) + ": " + t.title,
+      bg: i === slide ? "#F2A23C" : "#3A4046",
+      pick: () => this.setState({ slide: i })
+    }));
+
+    const sides = [["all", "Все"], ["T", "За T"], ["CT", "За CT"]];
+    const sizes = [["all", "Любой состав"], ["2", "Дуо"], ["3", "Тройка"], ["5", "Фулл стак"]];
+    const levels = [["low", "Лоу · 1–3"], ["mid", "Мид · 4–7"], ["high", "Хай · 8–10"]];
+    const sideChips = sides.map((s) => Object.assign({ label: s[1], pick: () => this.setState({ side: s[0] }) }, this.chip(st.side === s[0])));
+    const sizeChips = sizes.map((s) => Object.assign({ label: s[1], pick: () => this.setState({ size: s[0] }) }, this.chip(st.size === s[0])));
+    const levelChips = levels.map((s) => Object.assign({ label: s[1], pick: () => this.setState({ level: s[0] }) }, this.chip(level === s[0])));
+
+    const list = all
+      .filter((t) => st.side === "all" || t.side === st.side)
+      .filter((t) => st.size === "all" || String(t.size) === st.size)
+      .map((t) => Object.assign({}, t, { rate: this.rate(t.r[level]) }))
+      .sort((a, b) => b.rate.num - a.rate.num);
+
+    const levelNames = { low: "Оценка лоу · 1–3 лвл", mid: "Оценка мид · 4–7 лвл", high: "Оценка хай · 8–10 лвл" };
+
+    const withMine = all
+      .map((t) => Object.assign({}, t, { mine: this.rate(t.r[myLevel]) }))
+      .sort((a, b) => b.mine.num - a.mine.num);
+    const forMeGood = withMine.filter((t) => t.mine.ok && t.mine.num >= 4.0);
+    const forMeRest = withMine.filter((t) => !(t.mine.ok && t.mine.num >= 4.0));
+
+    const screens = [["home", "Тактики"], ["forme", "Под твоё эло"]];
+    const navItems = screens.map((s) => {
+      const on = st.screen === s[0];
+      return { label: s[1], current: on ? "page" : "false", fg: on ? "#FFC067" : "#EDEBE6", bd: on ? "#F2A23C" : "transparent", pick: () => this.go(s[0]) };
+    });
+
+    const quickPh = ["Трое забирают лонг, двое ждут в нижнем миде", "Смок на CT и на крест", "Встал смок — заходим вместе", "Бомбу на дефолт, держим кат"];
+    const rows = (k, ph) => Array.from({ length: k }, (_, i) => ({ n: i + 1, ph: ph ? ph[i] || "" : "" }));
+
+    const onVideo = (e) => {
+      const input = e.target;
+      const file = input.files && input.files[0];
+      if (!file) { this.setState({ video: null, videoErr: null }); return; }
+      const mb = file.size / (1024 * 1024);
+      if (!/^video\/(mp4|webm)$/.test(file.type)) {
+        input.value = "";
+        this.setState({ video: null, videoErr: "Это не mp4 или webm — перегони видео в один из этих форматов." });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        input.value = "";
+        this.setState({ video: null, videoErr: "Видео весит " + mb.toFixed(1) + " МБ, а максимум 10 МБ. Обрежь до 20–30 секунд или сожми в 720p." });
+        return;
+      }
+      this.setState({ video: { name: file.name, size: mb < 1 ? Math.round(file.size / 1024) + " КБ" : mb.toFixed(1) + " МБ" }, videoErr: null });
+    };
+
+    const submit = (e) => {
+      e.preventDefault();
+      const el = e.target.elements && e.target.elements.namedItem("title");
+      if (!el || !String(el.value).trim()) {
+        this.setState({ formErr: "Впиши название тактики — без него не отправим." });
+        try { el && el.focus(); } catch (err) {}
+        return;
+      }
+      this.setState({ submitted: true, formErr: null });
+      try { window.scrollTo(0, 0); } catch (err) {}
+    };
+
+    return {
+      showBanner: st.banner,
+      closeBanner: () => this.setState({ banner: false }),
+      loggedIn: loggedIn,
+      loggedOut: !loggedIn,
+      faceitLevel: faceitLevel,
+      elo: elo,
+      login: () => this.setState({ demoLogin: true, loginModal: true }),
+      logout: () => this.setState({ demoLogin: false }),
+      showLoginModal: st.loginModal && loggedIn,
+      closeModal: () => this.setState({ loginModal: false }),
+      goForMeFromModal: () => this.go("forme", { loginModal: false }),
+      myBandLabel: bandNames[myLevel],
+      myBandRange: bandRanges[myLevel],
+
+      navItems: navItems,
+      goHome: () => this.go("home"),
+      goAdd: () => this.go("add"),
+      isHome: st.screen === "home",
+      isForMe: st.screen === "forme",
+      isAdd: st.screen === "add",
+
+      cur: cur,
+      slideLabel: (slide + 1) + " / " + n,
+      prev: () => this.setState({ slide: slide - 1 }),
+      next: () => this.setState({ slide: slide + 1 }),
+      dots: dots,
+      sideChips: sideChips,
+      sizeChips: sizeChips,
+      levelChips: levelChips,
+      list: list,
+      noResults: list.length === 0,
+      countLabel: list.length + " " + this.plural(list.length, "тактика", "тактики", "тактик"),
+      levelLabel: levelNames[level],
+
+      forMeGood: forMeGood,
+      forMeRest: forMeRest,
+
+      showForm: loggedIn && !st.submitted,
+      showSuccess: loggedIn && st.submitted,
+      resetForm: () => this.setState({ submitted: false, quickN: 3, roleN: 3, nadeN: 2, video: null, videoErr: null, formErr: null }),
+      submit: submit,
+      hasFormErr: !!st.formErr,
+      formErr: st.formErr || "",
+      titleBorder: st.formErr ? "#F0A08A" : "#3A4046",
+      quickRows: rows(st.quickN, quickPh),
+      quickFull: st.quickN >= 4,
+      addQuick: () => this.setState({ quickN: Math.min(4, st.quickN + 1) }),
+      roleRows: rows(st.roleN),
+      roleFull: st.roleN >= 5,
+      addRole: () => this.setState({ roleN: Math.min(5, st.roleN + 1) }),
+      nadeRows: rows(st.nadeN),
+      nadeFull: st.nadeN >= 12,
+      addNade: () => this.setState({ nadeN: Math.min(12, st.nadeN + 1) }),
+      onVideo: onVideo,
+      hasVideo: !!st.video,
+      videoName: st.video ? st.video.name : "",
+      videoSize: st.video ? st.video.size : "",
+      hasVideoErr: !!st.videoErr,
+      videoErr: st.videoErr || "",
+      videoBorder: st.videoErr ? "#F0A08A" : st.video ? "#2E5A3A" : "#3A4046"
+    };
+  }
+}
+</script>
+</body>
+</html>
