@@ -5,3 +5,10 @@ dist/
 .env.local
 .env*.local
 .DS_Store
+
+# vinext / wrangler
+.wrangler/
+.dev.vars
+next-env.d.ts
+*.tsbuildinfo
+worker-configuration.d.ts

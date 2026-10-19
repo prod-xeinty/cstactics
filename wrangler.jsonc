@@ -1,0 +1,30 @@
+{
+  // Конфиг Cloudflare Workers. Секреты сюда НЕ кладём — только `wrangler secret put`.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kollgg",
+  "main": "vinext/server/app-router-entry",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kollgg",
+      // Для локалки подойдёт любой id. Для деплоя подставь настоящий из `wrangler d1 create kollgg`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    // Видео до модерации (приватный)
+    { "binding": "MEDIA_PRIVATE", "bucket_name": "kollgg-media-private" },
+    // Видео после модерации (публичный)
+    { "binding": "MEDIA_PUBLIC", "bucket_name": "kollgg-media-public" }
+  ],
+  "assets": {
+    "directory": "dist/client",
+    "html_handling": "none",
+    "not_found_handling": "none",
+    "binding": "ASSETS",
+    "run_worker_first": ["/*", "!/_next/static/*", "!/*/_next/static/*"]
+  }
+}
