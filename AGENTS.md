@@ -269,7 +269,7 @@ interface GamePatch {
 
 ### Как берём задачи
 
-Все задачи — в [GitHub Issues](https://github.com/sK8le/cstacktics/issues). Статус виден по меткам:
+Все задачи — в [GitHub Issues](https://github.com/prod-xeinty/cstactics/issues). Статус виден по меткам:
 
 | Статус | Как выглядит |
 |---|---|
