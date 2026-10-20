@@ -17,16 +17,17 @@
     "cf-typegen": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
-    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "test": "vitest run"
   },
   "dependencies": {
+    "@vinext/cloudflare": "1.1.1",
     "drizzle-orm": "0.45.4",
     "next": "16.4.2",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-server-dom-webpack": "19.3.1",
-    "vinext": "1.2.1",
-    "@vinext/cloudflare": "1.1.1"
+    "vinext": "1.2.1"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.64.0",
@@ -38,6 +39,7 @@
     "drizzle-kit": "0.31.11",
     "typescript": "5.9.3",
     "vite": "8.3.4",
+    "vitest": "5.0.5",
     "wrangler": "4.151.2"
   }
 }

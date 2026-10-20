@@ -5,7 +5,12 @@ export interface Database {
   /** Один запрос, вернуть первую строку или null. Параметры — только через `?`, никакой склейки строк. */
   first<T = Record<string, unknown>>(sql: string, params?: readonly unknown[]): Promise<T | null>;
   all<T = Record<string, unknown>>(sql: string, params?: readonly unknown[]): Promise<T[]>;
+  /** INSERT/UPDATE/DELETE. `changes` — сколько строк затронуто. */
+  run(sql: string, params?: readonly unknown[]): Promise<{ changes: number }>;
 }
+
+/** Имена серверных секретов и настроек. Значения — только в Workers Secrets / .dev.vars. */
+export type SecretName = "STEAM_API_KEY";
 
 export interface StoredObjectInfo {
   key: string;
@@ -26,4 +31,6 @@ export interface Platform {
   db: Database;
   /** null — хранилище не подключено (например, R2 ещё не включён). */
   media(bucket: MediaBucket): ObjectStorage | null;
+  /** Секрет или undefined, если не задан. Никогда не отдаём его клиенту и не пишем в логи. */
+  secret(name: SecretName): string | undefined;
 }
