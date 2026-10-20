@@ -13,3 +13,4 @@ test-results/
 Thumbs.db
 .cloudflare/
 .wrangler/
+next-env.d.ts

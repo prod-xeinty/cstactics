@@ -15,6 +15,9 @@
     --focus: #2457a6;
     --content-width: 90rem;
     --page-gutter: clamp(1rem, 3vw, 3rem);
+    --scroll-track: #e5dfd2;
+    --scroll-thumb: #8a8d91;
+    --scroll-thumb-hover: #5f6670;
     --font-heading: "Arial Narrow", "Roboto Condensed", sans-serif;
     --font-body: Arial, sans-serif;
   }
@@ -37,10 +40,40 @@ body {
   font-family: var(--font-body);
   font-size: 1rem;
   line-height: 1.5;
+  scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+  scrollbar-width: auto;
+}
+
+body::-webkit-scrollbar {
+  width: 0.875rem;
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border: 0.1875rem solid var(--scroll-track);
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: var(--scroll-thumb-hover);
 }
 
 a {
   color: inherit;
+}
+
+.visually-hidden {
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 button,
@@ -63,37 +96,6 @@ select {
     padding-inline: var(--page-gutter);
   }
 
-  .site-header {
-    align-items: center;
-    border-bottom: 1px solid var(--rule);
-    display: flex;
-    justify-content: space-between;
-    min-height: 4.5rem;
-  }
-
-  .site-logo,
-  .site-nav-link {
-    align-items: center;
-    display: inline-flex;
-    min-height: 2.75rem;
-  }
-
-  .site-logo {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    font-weight: 800;
-    text-decoration: none;
-  }
-
-  .site-logo span {
-    color: var(--route);
-  }
-
-  .site-nav-link {
-    font-weight: 700;
-    text-underline-offset: 0.35rem;
-  }
-
   .skip-link {
     background: var(--ink);
     color: var(--paper-raised);
@@ -107,5 +109,26 @@ select {
 
   .skip-link:focus {
     transform: translateY(0.5rem);
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--rule);
+    color: var(--ink-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    justify-content: space-between;
+    margin-top: 4rem;
+    padding-block: 1.5rem;
+  }
+
+  .site-footer p {
+    margin: 0;
+  }
+}
+
+@media (forced-colors: active) {
+  body {
+    scrollbar-color: auto;
   }
 }
