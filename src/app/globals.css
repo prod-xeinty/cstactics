@@ -1,0 +1,111 @@
+@layer reset, base, components;
+
+@layer base {
+  :root {
+    --paper: #f3efe4;
+    --paper-raised: #fbf8f0;
+    --ink: #17243a;
+    --ink-muted: #5f6670;
+    --rule: #c9c3b7;
+    --route: #b64232;
+    --highlight: #e8b84b;
+    --verified: #2f7d5b;
+    --warning: #9a5a20;
+    --danger: #b42318;
+    --focus: #2457a6;
+    --content-width: 90rem;
+    --page-gutter: clamp(1rem, 3vw, 3rem);
+    --font-heading: "Arial Narrow", "Roboto Condensed", sans-serif;
+    --font-body: Arial, sans-serif;
+  }
+}
+
+@layer reset {
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+a,
+input,
+select {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 0.1875rem solid var(--focus);
+  outline-offset: 0.1875rem;
+}
+}
+
+@layer components {
+  .site-shell {
+    margin-inline: auto;
+    max-width: var(--content-width);
+    padding-inline: var(--page-gutter);
+  }
+
+  .site-header {
+    align-items: center;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    min-height: 4.5rem;
+  }
+
+  .site-logo,
+  .site-nav-link {
+    align-items: center;
+    display: inline-flex;
+    min-height: 2.75rem;
+  }
+
+  .site-logo {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .site-logo span {
+    color: var(--route);
+  }
+
+  .site-nav-link {
+    font-weight: 700;
+    text-underline-offset: 0.35rem;
+  }
+
+  .skip-link {
+    background: var(--ink);
+    color: var(--paper-raised);
+    left: 1rem;
+    padding: 0.75rem 1rem;
+    position: fixed;
+    top: 0;
+    transform: translateY(-150%);
+    z-index: 100;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0.5rem);
+  }
+}
