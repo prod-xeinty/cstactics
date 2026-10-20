@@ -26,13 +26,27 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 | `npm run start:vinext` | Собранный воркер локально через Wrangler (после `build:vinext`) |
 | `npm run typecheck` | Проверка типов |
 | `npm run cf-typegen` | Перегенерировать типы биндингов `worker-configuration.d.ts` (в git не лежит, создаётся при `npm install`; запускай после правок `wrangler.jsonc`) |
+| `npm test` | Тесты (Vitest) |
+| `npm run db:generate` | Сгенерировать SQL-миграцию из `src/db/schema.ts` |
 | `npm run db:migrate:local` | Применить SQL-миграции из `migrations/` к локальной D1 |
+| `npm run db:migrate:remote` | Применить миграции к боевой D1 (перед деплоем, если появились новые) |
+
+Перед первым запуском `dev:vinext` примени миграции к локальной базе: `npm run db:migrate:local`.
+
+## Вход через Steam
+
+- `/api/auth/steam/login` → Steam → `/api/auth/steam/callback` → сессия в cookie `__Host-session` (в базе только SHA-256 токена), живёт 30 дней.
+- `/api/auth/me` — кто вошёл, `POST /api/auth/logout` — выход (только со своего сайта).
+- Ответ Steam проверяем у самого Steam (`check_authentication`), плюс `return_to`, `claimed_id`, одноразовый `response_nonce`.
+- Ник и аватар: с секретом `STEAM_API_KEY` — через Steam Web API, без него — из публичного профиля.
 
 ## Куда что класть
 
 - `src/app/` — страницы и маршруты (Next App Router).
 - `src/platform/` — интерфейсы платформы (`Database`, `ObjectStorage`). Бизнес-логика ходит в базу и хранилище только через них; Cloudflare-биндинги трогает один файл `cloudflare.ts`.
-- `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Таблицы появятся в #11.
+- `src/auth/`, `src/users/` — вход через Steam и сессии.
+- `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Сейчас там `users`, `sessions`, `openid_nonces`; остальное — #11.
+- `tests/` — тесты; база в тестах — встроенный SQLite из Node с настоящими миграциями.
 
 ## Пробный деплой на Cloudflare
 

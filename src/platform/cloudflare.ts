@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import type { Database, MediaBucket, ObjectStorage, Platform } from "./types";
+import type { Database, MediaBucket, ObjectStorage, Platform, SecretName } from "./types";
 
 // Единственное место, где мы трогаем Cloudflare-биндинги.
 function d1(binding: D1Database): Database {
@@ -10,6 +10,10 @@ function d1(binding: D1Database): Database {
     },
     async all<T>(sql: string, params: readonly unknown[] = []) {
       return (await prepare(sql, params).all<T>()).results;
+    },
+    async run(sql: string, params: readonly unknown[] = []) {
+      const res = await prepare(sql, params).run();
+      return { changes: res.meta.changes ?? 0 };
     },
   };
 }
@@ -35,7 +39,10 @@ function r2(bucket: R2Bucket): ObjectStorage {
 
 export function getPlatform(): Platform {
   // R2-бакеты могут быть не подключены (см. wrangler.jsonc), поэтому типизируем их как необязательные.
-  const optional = env as unknown as { MEDIA_PRIVATE?: R2Bucket; MEDIA_PUBLIC?: R2Bucket };
+  const optional = env as unknown as {
+    MEDIA_PRIVATE?: R2Bucket;
+    MEDIA_PUBLIC?: R2Bucket;
+  } & Partial<Record<SecretName, string>>;
   const buckets: Record<MediaBucket, R2Bucket | undefined> = {
     private: optional.MEDIA_PRIVATE,
     public: optional.MEDIA_PUBLIC,
@@ -45,6 +52,10 @@ export function getPlatform(): Platform {
     media: (bucket) => {
       const b = buckets[bucket];
       return b ? r2(b) : null;
+    },
+    secret: (name) => {
+      const v = optional[name];
+      return typeof v === "string" && v.length > 0 ? v : undefined;
     },
   };
 }
