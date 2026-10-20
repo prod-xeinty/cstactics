@@ -24,5 +24,6 @@ export type MediaBucket = "private" | "public";
 
 export interface Platform {
   db: Database;
-  media(bucket: MediaBucket): ObjectStorage;
+  /** null — хранилище не подключено (например, R2 ещё не включён). */
+  media(bucket: MediaBucket): ObjectStorage | null;
 }

@@ -36,19 +36,19 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 
 ## Пробный деплой на Cloudflare
 
-Нужен аккаунт Cloudflare и `npx wrangler login`. Один раз:
+Нужен аккаунт Cloudflare и `npx wrangler login`. Один раз (на вопрос «добавить в конфиг?» отвечай **нет**):
 
 ```bash
 npx wrangler d1 create kollgg                          # в выводе будет database_id
-npx wrangler r2 bucket create kollgg-media-private
-npx wrangler r2 bucket create kollgg-media-public
 ```
 
-Вставь `database_id` в `wrangler.jsonc` (сейчас там заглушка из нулей), потом:
+Вставь `database_id` в `wrangler.jsonc`, потом:
 
 ```bash
 npm run build:vinext
 npm run deploy:vinext
 ```
 
-После деплоя открой `https://kollgg.<твой-поддомен>.workers.dev/api/health` — должно быть `{"ok":true,...}`. Секреты на сервер — через `npx wrangler secret put ИМЯ`.
+После деплоя открой `https://kollgg.<твой-поддомен>.workers.dev/api/health` — должно быть `{"ok":true,...}`.
+
+**R2 пока отключён**: для него нужна платёжная карта на аккаунте Cloudflare. Бакеты закомментированы в `wrangler.jsonc`, в `/api/health` они показываются как `skipped`. Когда дойдём до загрузки видео (#12): включить R2 в панели, создать бакеты `kollgg-media-private` и `kollgg-media-public`, раскомментировать `r2_buckets`, запустить `npm run cf-typegen`. Секреты на сервер — через `npx wrangler secret put ИМЯ`.

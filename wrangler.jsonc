@@ -14,12 +14,14 @@
       "migrations_dir": "migrations"
     }
   ],
-  "r2_buckets": [
-    // Видео до модерации (приватный)
-    { "binding": "MEDIA_PRIVATE", "bucket_name": "kollgg-media-private" },
-    // Видео после модерации (публичный)
-    { "binding": "MEDIA_PUBLIC", "bucket_name": "kollgg-media-public" }
-  ],
+  // R2 пока не включён (нужна платёжная карта на аккаунте). Раскомментировать, когда дойдём до #12 (загрузка видео),
+  // и создать бакеты: `wrangler r2 bucket create kollgg-media-private` / `kollgg-media-public`.
+  // "r2_buckets": [
+  //   // Видео до модерации (приватный)
+  //   { "binding": "MEDIA_PRIVATE", "bucket_name": "kollgg-media-private" },
+  //   // Видео после модерации (публичный)
+  //   { "binding": "MEDIA_PUBLIC", "bucket_name": "kollgg-media-public" }
+  // ],
   "assets": {
     "directory": "dist/client",
     "html_handling": "none",

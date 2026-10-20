@@ -34,12 +34,17 @@ function r2(bucket: R2Bucket): ObjectStorage {
 }
 
 export function getPlatform(): Platform {
-  const buckets: Record<MediaBucket, R2Bucket> = {
-    private: env.MEDIA_PRIVATE,
-    public: env.MEDIA_PUBLIC,
+  // R2-бакеты могут быть не подключены (см. wrangler.jsonc), поэтому типизируем их как необязательные.
+  const optional = env as unknown as { MEDIA_PRIVATE?: R2Bucket; MEDIA_PUBLIC?: R2Bucket };
+  const buckets: Record<MediaBucket, R2Bucket | undefined> = {
+    private: optional.MEDIA_PRIVATE,
+    public: optional.MEDIA_PUBLIC,
   };
   return {
     db: d1(env.DB),
-    media: (bucket) => r2(buckets[bucket]),
+    media: (bucket) => {
+      const b = buckets[bucket];
+      return b ? r2(b) : null;
+    },
   };
 }
