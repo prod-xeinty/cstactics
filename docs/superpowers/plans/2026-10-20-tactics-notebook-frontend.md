@@ -169,7 +169,7 @@ export function parseTacticFilters(
 export const tacticsRepository: TacticsRepository;
 ```
 
-`Tactic` расширяет модель из `AGENTS.md` только полями представления, которые нужны утверждённым экранам: `duration`, `ratings: Record<FaceitBand, RatingSummary>`, `mapImage`, `mapAlt`; бизнес-поля не переименовывать. UI показывает `works` и `easy` отдельно только при `voteCount >= 5`, иначе — «мало голосов».
+`Tactic` расширяет модель из `AGENTS.md` только полями представления, которые нужны утверждённым экранам: `duration`, `ratings: Record<FaceitBand, RatingSummary>`, `mapImage`, `mapAlt`; бизнес-поля не переименовывать. `mapImage` уникален для каждой тактики и содержит её маршрут, номера ролей и гранаты. UI показывает `works` и `easy` отдельно только при `voteCount >= 5`, иначе — «мало голосов».
 
 **Step 1: Установить Zod и написать падающие тесты фильтров**
 
@@ -191,7 +191,7 @@ Expected: PASS.
 
 **Step 3: Написать падающие тесты репозитория**
 
-Проверить фильтрацию по стороне и составу, выбор featured, детерминированную сортировку, пустой результат, известный и неизвестный slug. Отдельно проверить, что возвращаемые массивы нельзя использовать для мутации исходного fixture.
+Проверить фильтрацию по стороне и составу, выбор featured, детерминированную сортировку, пустой результат, известный и неизвестный slug. Отдельно проверить, что возвращаемые массивы нельзя использовать для мутации исходного fixture и что у каждого fixture свой непустой `mapImage`.
 
 Run: `npm run test:run -- src/tactics/__tests__/repository.test.ts`
 
@@ -243,14 +243,32 @@ git commit -m "feat: добавить модель и демо-репозито�
 - Create: `src/shared/ui/patch-notice/PatchNotice.test.tsx`
 - Create: `src/patches/storage.ts`
 - Create: `src/patches/storage.test.ts`
-- Create: `public/images/dust2-notebook-map.webp`
-- Create: `public/images/dust2-notebook-map-mobile.webp`
+- Create: `src/patches/fixtures.ts`
+- Create: `src/patches/notice.ts`
+- Create: `src/patches/notice.test.ts`
+- Create: `public/images/tactics/a-long.webp`
+- Create: `public/images/tactics/fast-b.webp`
+- Create: `public/images/tactics/mid-control.webp`
+- Create: `public/images/tactics/fake-a-fast-b.webp`
+- Create: `public/images/tactics/split-a-short.webp`
+- Create: `public/images/tactics/slow-a-mid-control.webp`
 - Modify: `src/app/layout.tsx`
 - Modify: `src/app/globals.css`
 
+**Patch predicate:**
+
+```ts
+export function shouldShowPatchNotice(
+  latestPatch: GamePatch | null,
+  tactics: readonly Pick<Tactic, "status" | "gameVersion">[],
+): boolean;
+```
+
+Функция учитывает только опубликованные тактики и возвращает `false`, если патча нет, опубликованных тактик нет или все они проверены на `latestPatch.version`.
+
 **Step 1: Подготовить содержательные растровые схемы**
 
-На основе `design/references/notebook-*.png` создать через ImageGen две версии одной чистой схемы Dust2 без текста интерфейса: desktop около 1600 × 1200 и mobile около 900 × 1200. Сохранить WebP в указанные пути. Не воспроизводить карту набором `div`.
+На основе `design/references/notebook-*.png` создать через ImageGen шесть отдельных схем Dust2 без текста интерфейса: по одной для каждого fixture, с его собственными маршрутами, номерами ролей и обозначениями гранат. Сохранить WebP в указанные пути; responsive-кадрирование задавать через контейнер и `object-fit`, не подменяя содержимое одной общей картой. Не воспроизводить карту набором `div`.
 
 **Step 2: Написать падающие component-тесты**
 
@@ -259,7 +277,9 @@ git commit -m "feat: добавить модель и демо-репозито�
 - открытие/закрытие мобильного меню и возвращение фокуса;
 - доступный `alt` у карты и отсутствие декоративного дубля для screen reader;
 - русские подписи метаданных;
-- закрытие `PatchNotice`, ключ с версией патча и корректную работу при исключении `localStorage`.
+- отсутствие ссылок на `/tactics` и «Под твоё эло» до появления их маршрутов;
+- закрытие `PatchNotice`, ключ с версией патча и корректную работу при исключении `localStorage`;
+- `shouldShowPatchNotice()` возвращает `false`, когда все опубликованные тактики проверены на последнем патче, и `true`, когда есть устаревшая тактика.
 
 Run: `npm run test:run -- src/shared/ui src/patches`
 
@@ -267,7 +287,7 @@ Expected: FAIL.
 
 **Step 3: Реализовать общие компоненты**
 
-`SiteHeader` содержит логотип, навигационные элементы только для реализованных маршрутов, поиск-заглушку только как визуальное поле и мобильное меню. `PatchNotice` получает `patchVersion`, `releasedAt` и текст через props; storage-утилита скрывает браузерный API за безопасным интерфейсом. `TacticMap` использует `next/image` с корректным `sizes`. Не добавлять нерабочие ссылки на каталог или «Под твоё эло».
+`SiteHeader` содержит логотип, навигационные элементы только для реализованных маршрутов, поиск-заглушку только как визуальное поле и мобильное меню. `src/patches/fixtures.ts` хранит последний известный патч, а `shouldShowPatchNotice(latestPatch, tactics)` сравнивает его с `gameVersion` опубликованных тактик. `PatchNotice` получает данные только при положительном предикате; storage-утилита скрывает браузерный API за безопасным интерфейсом. `TacticMap` использует уникальный `tactic.mapImage` через `next/image` с корректным `sizes`. Не добавлять нерабочие ссылки на каталог или «Под твоё эло».
 
 Run: `npm run test:run -- src/shared/ui src/patches`
 
@@ -275,7 +295,7 @@ Expected: PASS.
 
 **Step 4: Подключить оболочку к layout**
 
-Добавить `SiteHeader`, `PatchNotice`, `<main id="main-content">` и footer. Не создавать ложную авторизацию: кнопка Steam ведёт на недоступное действие с честной подписью «Скоро» или отсутствует согласно макету первого этапа.
+Добавить `SiteHeader`, условный `PatchNotice`, `<main id="main-content">` и footer. Если `shouldShowPatchNotice()` возвращает `false`, плашка отсутствует в DOM. Не создавать ложную авторизацию: кнопка Steam ведёт на недоступное действие с честной подписью «Скоро» или отсутствует согласно макету первого этапа.
 
 Run: `npm run lint; npm run typecheck`
 
