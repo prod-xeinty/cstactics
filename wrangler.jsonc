@@ -9,8 +9,8 @@
     {
       "binding": "DB",
       "database_name": "kollgg",
-      // Для локалки подойдёт любой id. Для деплоя подставь настоящий из `wrangler d1 create kollgg`.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      // id базы из `wrangler d1 create kollgg` (не секрет).
+      "database_id": "5f401665-fdd7-4199-99d1-5aa8c113203d",
       "migrations_dir": "migrations"
     }
   ],
