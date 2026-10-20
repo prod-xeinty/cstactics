@@ -24,7 +24,17 @@ function redirect(to: string, cookies: string[]): Response {
 }
 
 // Шаг 2: Steam вернул игрока. Проверяем state, подпись у Steam, одноразовость nonce, потом создаём сессию.
+// Любая внутренняя ошибка (например, не применена миграция) → «не вышло зайти», а не 500; причина — в логе.
 export async function GET(request: Request) {
+  try {
+    return await handleCallback(request);
+  } catch (err) {
+    console.error("steam login error:", err instanceof Error ? err.message : String(err));
+    return redirect("/?login=failed", [clearCookie(STATE_COOKIE)]);
+  }
+}
+
+async function handleCallback(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const origin = url.origin;
   const cookieHeader = request.headers.get("cookie");
