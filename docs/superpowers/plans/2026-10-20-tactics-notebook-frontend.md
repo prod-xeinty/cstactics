@@ -142,6 +142,13 @@ export type Side = "T" | "CT";
 export type FaceitBand = "low" | "mid" | "high";
 export type TeamSize = 2 | 3 | 4 | 5;
 
+export interface RatingSummary {
+  works: number;
+  easy: number;
+  voteCount: number;
+  demo: true;
+}
+
 export interface TacticFilters {
   map: "dust2";
   side: Side | "all";
@@ -162,7 +169,7 @@ export function parseTacticFilters(
 export const tacticsRepository: TacticsRepository;
 ```
 
-`Tactic` расширяет модель из `AGENTS.md` только полями представления, которые нужны утверждённым экранам: `duration`, `ratings`, `mapImage`, `mapAlt`; бизнес-поля не переименовывать.
+`Tactic` расширяет модель из `AGENTS.md` только полями представления, которые нужны утверждённым экранам: `duration`, `ratings: Record<FaceitBand, RatingSummary>`, `mapImage`, `mapAlt`; бизнес-поля не переименовывать. `mapImage` уникален для каждой тактики и содержит её маршрут, номера ролей и гранаты. UI показывает `works` и `easy` отдельно только при `voteCount >= 5`, иначе — «мало голосов».
 
 **Step 1: Установить Zod и написать падающие тесты фильтров**
 
@@ -184,7 +191,7 @@ Expected: PASS.
 
 **Step 3: Написать падающие тесты репозитория**
 
-Проверить фильтрацию по стороне и составу, выбор featured, детерминированную сортировку, пустой результат, известный и неизвестный slug. Отдельно проверить, что возвращаемые массивы нельзя использовать для мутации исходного fixture.
+Проверить фильтрацию по стороне и составу, выбор featured, детерминированную сортировку, пустой результат, известный и неизвестный slug. Отдельно проверить, что возвращаемые массивы нельзя использовать для мутации исходного fixture и что у каждого fixture свой непустой `mapImage`.
 
 Run: `npm run test:run -- src/tactics/__tests__/repository.test.ts`
 
@@ -200,7 +207,7 @@ Expected: PASS.
 
 **Step 5: Написать и реализовать форматирование метаданных**
 
-Проверить подписи стороны, состава, сложности, экономики и FACEIT-группы. Компоненты не должны сами собирать эти строки из условных операторов.
+Проверить подписи стороны, состава, сложности, экономики и FACEIT-группы, а также форматирование двух оценок и порог пяти голосов. Компоненты не должны сами собирать эти строки из условных операторов.
 
 Run: `npm run test:run -- src/tactics/__tests__/format.test.ts`
 
@@ -236,14 +243,32 @@ git commit -m "feat: добавить модель и демо-репозито�
 - Create: `src/shared/ui/patch-notice/PatchNotice.test.tsx`
 - Create: `src/patches/storage.ts`
 - Create: `src/patches/storage.test.ts`
-- Create: `public/images/dust2-notebook-map.webp`
-- Create: `public/images/dust2-notebook-map-mobile.webp`
+- Create: `src/patches/fixtures.ts`
+- Create: `src/patches/notice.ts`
+- Create: `src/patches/notice.test.ts`
+- Create: `public/images/tactics/a-long.webp`
+- Create: `public/images/tactics/fast-b.webp`
+- Create: `public/images/tactics/mid-control.webp`
+- Create: `public/images/tactics/fake-a-fast-b.webp`
+- Create: `public/images/tactics/split-a-short.webp`
+- Create: `public/images/tactics/slow-a-mid-control.webp`
 - Modify: `src/app/layout.tsx`
 - Modify: `src/app/globals.css`
 
+**Patch predicate:**
+
+```ts
+export function shouldShowPatchNotice(
+  latestPatch: GamePatch | null,
+  tactics: readonly Pick<Tactic, "status" | "gameVersion">[],
+): boolean;
+```
+
+Функция учитывает только опубликованные тактики и возвращает `false`, если патча нет, опубликованных тактик нет или все они проверены на `latestPatch.version`.
+
 **Step 1: Подготовить содержательные растровые схемы**
 
-На основе `design/references/notebook-*.png` создать через ImageGen две версии одной чистой схемы Dust2 без текста интерфейса: desktop около 1600 × 1200 и mobile около 900 × 1200. Сохранить WebP в указанные пути. Не воспроизводить карту набором `div`.
+На основе `design/references/notebook-*.png` создать через ImageGen шесть отдельных схем Dust2 без текста интерфейса: по одной для каждого fixture, с его собственными маршрутами, номерами ролей и обозначениями гранат. Сохранить WebP в указанные пути; responsive-кадрирование задавать через контейнер и `object-fit`, не подменяя содержимое одной общей картой. Не воспроизводить карту набором `div`.
 
 **Step 2: Написать падающие component-тесты**
 
@@ -252,7 +277,9 @@ git commit -m "feat: добавить модель и демо-репозито�
 - открытие/закрытие мобильного меню и возвращение фокуса;
 - доступный `alt` у карты и отсутствие декоративного дубля для screen reader;
 - русские подписи метаданных;
-- закрытие `PatchNotice`, ключ с версией патча и корректную работу при исключении `localStorage`.
+- отсутствие ссылок на `/tactics` и «Под твоё эло» до появления их маршрутов;
+- закрытие `PatchNotice`, ключ с версией патча и корректную работу при исключении `localStorage`;
+- `shouldShowPatchNotice()` возвращает `false`, когда все опубликованные тактики проверены на последнем патче, и `true`, когда есть устаревшая тактика.
 
 Run: `npm run test:run -- src/shared/ui src/patches`
 
@@ -260,7 +287,7 @@ Expected: FAIL.
 
 **Step 3: Реализовать общие компоненты**
 
-`SiteHeader` содержит логотип, ссылки «Тактики» и «Под твоё эло», поиск-заглушку только как визуальное поле и мобильное меню. `PatchNotice` получает `patchVersion`, `releasedAt` и текст через props; storage-утилита скрывает браузерный API за безопасным интерфейсом. `TacticMap` использует `next/image` с корректным `sizes`.
+`SiteHeader` содержит логотип, навигационные элементы только для реализованных маршрутов, поиск-заглушку только как визуальное поле и мобильное меню. `src/patches/fixtures.ts` хранит последний известный патч, а `shouldShowPatchNotice(latestPatch, tactics)` сравнивает его с `gameVersion` опубликованных тактик. `PatchNotice` получает данные только при положительном предикате; storage-утилита скрывает браузерный API за безопасным интерфейсом. `TacticMap` использует уникальный `tactic.mapImage` через `next/image` с корректным `sizes`. Не добавлять нерабочие ссылки на каталог или «Под твоё эло».
 
 Run: `npm run test:run -- src/shared/ui src/patches`
 
@@ -268,7 +295,7 @@ Expected: PASS.
 
 **Step 4: Подключить оболочку к layout**
 
-Добавить `SiteHeader`, `PatchNotice`, `<main id="main-content">` и footer. Не создавать ложную авторизацию: кнопка Steam ведёт на недоступное действие с честной подписью «Скоро» или отсутствует согласно макету первого этапа.
+Добавить `SiteHeader`, условный `PatchNotice`, `<main id="main-content">` и footer. Если `shouldShowPatchNotice()` возвращает `false`, плашка отсутствует в DOM. Не создавать ложную авторизацию: кнопка Steam ведёт на недоступное действие с честной подписью «Скоро» или отсутствует согласно макету первого этапа.
 
 Run: `npm run lint; npm run typecheck`
 
@@ -303,7 +330,7 @@ git commit -m "feat: собрать оболочку Блокнота такти
 
 **Step 1: Написать падающие тесты фильтров и состояний списка**
 
-Проверить управление `select`/segmented controls клавиатурой, сериализацию только поддерживаемых query, кнопку сброса, data/empty/error состояния и сохранение фильтров при повторе.
+Проверить управление `select`/segmented controls клавиатурой, сериализацию только поддерживаемых query, кнопку сброса, data/empty/error состояния, сохранение фильтров при повторе, две независимые оценки `works`/`easy` и состояние «мало голосов».
 
 Run: `npm run test:run -- src/features/tactic-filters src/features/tactic-list`
 
@@ -319,7 +346,7 @@ Expected: PASS.
 
 **Step 3: Реализовать серверную главную**
 
-`src/app/page.tsx` читает `searchParams`, вызывает только `tacticsRepository`, показывает «План на следующий раунд», рекомендацию, содержательную схему, быстрый колл и альтернативы. Ссылки ведут на `/call/[slug]` и `/tactics/[slug]`. Каталог остаётся ссылкой/CTA с честной пометкой будущего этапа, без несуществующего рабочего экрана.
+`src/app/page.tsx` читает `searchParams`, вызывает только `tacticsRepository`, показывает «План на следующий раунд», рекомендацию, содержательную схему, быстрый колл и альтернативы. Рабочие ссылки ведут только на `/call/[slug]` и `/tactics/[slug]`. Каталог обозначается как следующий этап в неинтерактивном тексте; не добавлять ссылку на отсутствующий `/tactics`.
 
 **Step 4: Добавить loading и error состояния**
 
@@ -333,7 +360,7 @@ Expected: PASS.
 
 Run: `npm run dev`
 
-Сравнить `/` с `design/references/notebook-home.png` при 1440 × 1024 и 390 × 844. Проверить отсутствие горизонтального скролла, перенос длинного заголовка и 44 px targets.
+Сравнить `/` с `design/references/notebook-home.png` при 1440 × 1024 и 390 × 844. Проверить отсутствие горизонтального скролла, перенос длинного заголовка и 44 px targets. Не копировать единый процент «успешности» из композиционного референса: показывать две оценки из модели.
 
 **Step 6: Commit**
 
@@ -366,7 +393,7 @@ export interface QuickCallModeProps {
 
 **Step 1: Написать падающие тесты режима**
 
-Проверить начальный шаг, переход вперёд/назад, запрет выхода за границы, пять ролей, доступные названия кнопок и ссылку на полный разбор. Кнопка «Другой колл» должна вести на заранее выбранный детерминированный alternative slug, а не использовать случайность в браузере.
+Проверить начальный шаг, переход вперёд/назад, запрет выхода за границы, точное соответствие числа ролей `teamSize`, доступные названия кнопок и ссылку на полный разбор. Кнопка «Другой колл» должна вести на заранее выбранный детерминированный alternative slug, а не использовать случайность в браузере.
 
 Run: `npm run test:run -- src/features/quick-call/QuickCallMode.test.tsx`
 
@@ -421,7 +448,7 @@ git commit -m "feat: добавить быстрый режим колла"
 
 **Step 1: Написать падающие component-тесты**
 
-Проверить нумерацию максимум четырёх шагов, роли 1–5, запасную роль, список гранат в формате «кто → что → куда → триггер → зачем» и отсутствие пустых секций при необязательных данных.
+Проверить нумерацию максимум четырёх шагов, роли 1–`teamSize`, запасную роль, список гранат в формате «кто → что → куда → триггер → зачем» и отсутствие пустых секций при необязательных данных.
 
 Run: `npm run test:run -- src/features/round-steps src/features/role-assignments src/features/utility-checklist`
 
