@@ -26,12 +26,22 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 | `npm run start:vinext` | Собранный воркер локально через Wrangler (после `build:vinext`) |
 | `npm run typecheck` | Проверка типов |
 | `npm run cf-typegen` | Перегенерировать типы биндингов `worker-configuration.d.ts` (в git не лежит, создаётся при `npm install`; запускай после правок `wrangler.jsonc`) |
+| `npm run check` | Все проверки разом, как в CI |
+| `npm run lint` | Линтер (ESLint) |
 | `npm test` | Тесты (Vitest) |
 | `npm run db:generate` | Сгенерировать SQL-миграцию из `src/db/schema.ts` |
 | `npm run db:migrate:local` | Применить SQL-миграции из `migrations/` к локальной D1 |
 | `npm run db:migrate:remote` | Применить миграции к боевой D1 (перед деплоем, если появились новые) |
 
 Перед первым запуском `dev:vinext` примени миграции к локальной базе: `npm run db:migrate:local`.
+
+## Проверки (CI)
+
+```bash
+npm run check   # типы → линтер → тесты → сборка, то же самое гоняет GitHub на каждый PR
+```
+
+Workflow — `.github/workflows/ci.yml`. Если проверка красная, PR не мержим.
 
 ## Вход через Steam
 

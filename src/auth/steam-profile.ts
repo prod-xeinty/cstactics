@@ -12,7 +12,8 @@ const AVATAR_HOSTS = [".steamstatic.com", "steamcdn-a.akamaihd.net"];
 export function cleanNickname(raw: unknown, fallback: string): string {
   if (typeof raw !== "string") return fallback;
   // Убираем управляющие символы, обрезаем. Экранирование при выводе — забота React.
-  const cleaned = raw.replace(/[\u0000-\u001f\u007f-\u009f​-‏‪-‮]/g, "").trim();
+  // eslint-disable-next-line no-control-regex -- намеренно вырезаем управляющие символы из ника
+  const cleaned = raw.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e]/g, "").trim();
   return cleaned.length > 0 ? Array.from(cleaned).slice(0, 64).join("") : fallback;
 }
 
