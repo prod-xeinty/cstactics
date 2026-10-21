@@ -1,0 +1,13 @@
+# gitleaks: стандартные правила + исключения для файлов, где «секретов» быть не может.
+title = "kollgg"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Сгенерированные и сторонние файлы"
+paths = [
+  '''package-lock\.json$''',
+  '''migrations/meta/.*\.json$''',
+  '''design/.*''',
+]

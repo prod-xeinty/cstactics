@@ -1,0 +1,24 @@
+# Кого GitHub сам зовёт в ревьюеры. Последнее совпадение важнее.
+# Зоны — AGENTS.md, раздел 10.
+
+*                       @sK8le @prod-xeinty
+
+# Фронт, дизайн, контент — prod-xeinty
+/src/app/               @prod-xeinty
+/design/                @prod-xeinty
+
+# Безопасность, CI, инфраструктура, авторизация — sK8le
+/.github/               @sK8le
+/.gitleaks.toml         @sK8le
+/security/              @sK8le
+/scripts/audit.mjs      @sK8le
+/SECURITY.md            @sK8le
+/docs/security/         @sK8le
+/src/auth/              @sK8le
+/src/platform/          @sK8le
+/src/app/api/auth/      @sK8le
+/wrangler.jsonc         @sK8le
+/migrations/            @sK8le @prod-xeinty
+
+# Единый источник правды — оба
+/AGENTS.md              @sK8le @prod-xeinty

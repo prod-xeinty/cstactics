@@ -1,0 +1,51 @@
+# CI: на каждый PR и пуш в main — типы, линтер, тесты, сборка.
+# Локально то же самое: npm run check
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Токен workflow — только чтение. Права расширяем точечно, если понадобится.
+permissions:
+  contents: read
+
+# Новый пуш в тот же PR отменяет старый прогон.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  check:
+    name: Проверки
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Экшены закреплены по SHA коммита, а не по тегу: тег можно перевесить, SHA — нет.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Зависимости
+        run: npm ci
+
+      - name: Типы
+        run: npm run typecheck
+
+      - name: Линтер
+        run: npm run lint
+
+      - name: Тесты
+        run: npm test
+
+      - name: Сборка
+        run: npm run build:vinext
