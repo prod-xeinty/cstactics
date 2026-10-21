@@ -20,7 +20,8 @@
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "test": "vitest run",
     "lint": "eslint .",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build:vinext"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build:vinext",
+    "audit:deps": "node scripts/audit.mjs"
   },
   "dependencies": {
     "@vinext/cloudflare": "1.1.1",

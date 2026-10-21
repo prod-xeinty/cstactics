@@ -43,6 +43,8 @@ npm run check   # типы → линтер → тесты → сборка, т�
 
 Workflow — `.github/workflows/ci.yml`. Если проверка красная, PR не мержим.
 
+Безопасность (секреты, зависимости, CodeQL, Dependabot) — [docs/security/devsecops.md](docs/security/devsecops.md). Зависимости локально: `npm run audit:deps`. Об уязвимостях — [SECURITY.md](SECURITY.md).
+
 ## Вход через Steam
 
 - `/api/auth/steam/login` → Steam → `/api/auth/steam/callback` → сессия в cookie `__Host-session` (в базе только SHA-256 токена), живёт 30 дней.
