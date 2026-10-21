@@ -11,6 +11,7 @@ test-results/
 !.env.example
 .DS_Store
 Thumbs.db
+.idea/
 .cloudflare/
 .wrangler/
 next-env.d.ts

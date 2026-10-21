@@ -1,5 +1,29 @@
 .page {
-  margin-inline: auto;
-  max-width: var(--content-width);
-  padding: 4rem var(--page-gutter);
+  padding-block: clamp(2rem, 5vw, 5rem);
 }
+
+.loading {
+  display: grid;
+  min-height: 70vh;
+  place-content: center;
+}
+
+.loading p {
+  color: var(--ink-muted);
+  font-weight: 700;
+  margin: 0;
+}
+
+.error {
+  padding-block: 4rem;
+}
+
+.intro { margin-bottom: clamp(2rem, 5vw, 4rem); max-width: 72rem; }
+.intro > p:first-child { color: var(--route); font-weight: 800; letter-spacing: 0.08em; margin: 0 0 0.75rem; text-transform: uppercase; }
+.intro h1 { font-family: var(--font-heading); font-size: clamp(2.5rem, 8vw, 7rem); letter-spacing: -0.05em; line-height: 0.95; margin: 0; overflow-wrap: anywhere; text-transform: uppercase; }
+.intro > p:last-child { color: var(--ink-muted); font-size: clamp(1.05rem, 2vw, 1.35rem); margin: 1rem 0 0; max-width: 48rem; }
+.page > form { margin-bottom: 2rem; }
+.alternatives { margin-top: clamp(3rem, 7vw, 6rem); }
+.sectionHeading { align-items: end; display: flex; flex-wrap: wrap; gap: 0.75rem 2rem; justify-content: space-between; margin-bottom: 1rem; }
+.sectionHeading h2 { font-family: var(--font-heading); font-size: clamp(2rem, 5vw, 4rem); margin: 0; text-transform: uppercase; }
+.sectionHeading p { color: var(--ink-muted); margin: 0; }

@@ -1,0 +1,13 @@
+.featured { border-block: 1px solid var(--ink); display: grid; gap: clamp(1rem, 3vw, 3rem); grid-template-columns: auto minmax(0, 1fr); padding-block: clamp(1.5rem, 4vw, 3.5rem); }
+.number { color: var(--route); font-family: var(--font-heading); font-size: clamp(2rem, 6vw, 5rem); font-weight: 800; line-height: 0.9; }
+.content { max-width: 68rem; }
+.label { color: var(--route); font-weight: 700; letter-spacing: 0.08em; margin: 0 0 0.5rem; text-transform: uppercase; }
+.content h2 { font-family: var(--font-heading); font-size: clamp(2.25rem, 7vw, 6.5rem); letter-spacing: -0.045em; line-height: 0.92; margin: 0; overflow-wrap: anywhere; text-transform: uppercase; }
+.call { color: var(--ink-muted); font-size: clamp(1.1rem, 2vw, 1.5rem); margin-block: 1.25rem 1.5rem; max-width: 54rem; }
+.actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; }
+.primary, .secondary { align-items: center; border: 1px solid var(--ink); border-radius: 0.25rem; display: inline-flex; font-weight: 800; min-height: 3rem; padding-inline: 1rem; text-decoration: none; }
+.primary { background: var(--highlight); }
+.secondary { background: transparent; }
+.primary:hover, .secondary:hover { transform: translateY(-1px); }
+@media (max-width: 36rem) { .featured { grid-template-columns: 1fr; } .number { font-size: 2rem; } .actions a { justify-content: center; width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .primary:hover, .secondary:hover { transform: none; } }
