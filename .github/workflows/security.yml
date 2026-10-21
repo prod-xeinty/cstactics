@@ -37,8 +37,10 @@ jobs:
           echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
           tar -xzf gitleaks.tgz gitleaks
 
+      # Только история проверяемого коммита (HEAD), а не всех веток репозитория:
+      # у каждой ветки свой PR и свои проверки, чужая ветка не должна валить эту.
       - name: Проверить историю коммитов
-        run: ./gitleaks git --config .gitleaks.toml --redact --no-banner --exit-code 1 .
+        run: ./gitleaks git --config .gitleaks.toml --redact --no-banner --exit-code 1 --log-opts="HEAD" .
 
   audit:
     name: Зависимости (npm audit)
