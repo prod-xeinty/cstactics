@@ -7,7 +7,7 @@
 | Workflow | Что делает | Падает, если |
 |---|---|---|
 | `CI` (`ci.yml`) | `npm ci` → типы → ESLint → тесты → сборка | любая проверка красная |
-| `Security` → gitleaks (`security.yml`) | ищет секреты во **всей** истории коммитов | найден ключ, токен, пароль |
+| `Security` → gitleaks (`security.yml`) | ищет секреты во **всей** истории проверяемого коммита (не только в диффе PR) | найден ключ, токен, пароль |
 | `Security` → npm audit (`security.yml`) | уязвимости зависимостей через `scripts/audit.mjs` | critical в любых зависимостях или high в продовых без исключения |
 | `CodeQL` (`codeql.yml`) | статический анализ TS/JS, набор `security-extended` | найдена уязвимость (результаты — Security → Code scanning) |
 | Dependabot (`dependabot.yml`) | раз в неделю PR с обновлениями npm и GitHub Actions | — |
