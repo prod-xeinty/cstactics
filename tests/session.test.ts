@@ -80,7 +80,7 @@ describe("cookie и мелочи", () => {
   });
 
   it("ник чистится от управляющих символов и обрезается", () => {
-    expect(cleanNickname("  ni\u0000ck‮  ", "id")).toBe("nick");
+    expect(cleanNickname("  ni\u0000ck\u202e  ", "id")).toBe("nick");
     expect(cleanNickname("", "id")).toBe("id");
     expect(cleanNickname("я".repeat(100), "id")).toHaveLength(64);
   });
