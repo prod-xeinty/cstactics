@@ -22,7 +22,7 @@ describe("QuickCallMode", () => {
     const user = userEvent.setup();
     render(<QuickCallMode tactic={tactic} alternativeSlug="b-rush" />);
 
-    await user.click(screen.getByRole("button", { name: "Дальше" }));
+    await user.click(screen.getByRole("button", { name: "Следующий шаг" }));
     expect(screen.getByText("Шаг 2 из 3")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: tactic.quick[1] })).toBeInTheDocument();
 
@@ -35,11 +35,11 @@ describe("QuickCallMode", () => {
     const user = userEvent.setup();
     render(<QuickCallMode tactic={tactic} alternativeSlug="b-rush" />);
 
-    await user.click(screen.getByRole("button", { name: "Дальше" }));
-    await user.click(screen.getByRole("button", { name: "Дальше" }));
+    await user.click(screen.getByRole("button", { name: "Следующий шаг" }));
+    await user.click(screen.getByRole("button", { name: "Следующий шаг" }));
 
     expect(screen.getByText("Шаг 3 из 3")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Дальше" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Следующий шаг" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Открыть полный план" })).toHaveAttribute(
       "href",
       `/tactics/${tactic.slug}`,
@@ -58,7 +58,7 @@ describe("QuickCallMode", () => {
   it("показывает переход к следующему шагу до длинного списка ролей", () => {
     render(<QuickCallMode tactic={tactic} alternativeSlug="b-rush" />);
 
-    const nextButton = screen.getByRole("button", { name: "Дальше" });
+    const nextButton = screen.getByRole("button", { name: "Следующий шаг" });
     const roles = screen.getByRole("list", { name: "Роли команды" });
 
     expect(

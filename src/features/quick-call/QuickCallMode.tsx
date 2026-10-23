@@ -7,6 +7,11 @@ import type { Tactic } from "@/tactics/model";
 
 import styles from "./QuickCallMode.module.css";
 
+import {
+    getNextStep,
+    getPrevStep,
+} from "@/features/quick-call/step-navigation";
+
 export interface QuickCallModeProps {
   tactic: Tactic;
   alternativeSlug: string | null;
@@ -18,8 +23,8 @@ export function QuickCallMode({ tactic, alternativeSlug }: QuickCallModeProps) {
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === lastStepIndex;
 
-  const goBack = () => setStepIndex((current) => Math.max(0, current - 1));
-  const goNext = () => setStepIndex((current) => Math.min(lastStepIndex, current + 1));
+  const goBack = () => setStepIndex((current) => getPrevStep(current));
+  const goNext = () => setStepIndex((current) => getNextStep(current, tactic.quick.length));
 
   return (
     <section className={styles.mode} aria-labelledby="quick-call-step">
@@ -42,7 +47,7 @@ export function QuickCallMode({ tactic, alternativeSlug }: QuickCallModeProps) {
             Открыть полный план
           </Link>
         ) : (
-          <button className={styles.primary} type="button" onClick={goNext}>Дальше</button>
+          <button className={styles.primary} type="button" onClick={goNext}>Следующий шаг</button>
         )}
       </div>
 
