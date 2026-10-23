@@ -8,6 +8,7 @@ import {
     formatRatingSummary,
     formatSide,
     formatTeamSize,
+    formatNade,
 } from "../format";
 
 describe("подписи тактики", () => {
@@ -55,5 +56,36 @@ describe("подписи гранат", () => {
         expect(formatNadeType("molotov")).toBe("Молик");
         expect(formatNadeType("he")).toBe("Хаешка");
         expect(formatNadeType("decoy")).toBe("Декой");
+    });
+});
+
+describe("formatNade", () => {
+    it("формирует описание гранаты без точки броска", () => {
+        expect(
+            formatNade({
+                who: "роль 2",
+                type: "smoke",
+                to: "крест",
+                when: "когда лонг занят",
+                why: "закрыть проход с CT-спавна",
+            }),
+        ).toBe(
+            "роль 2 → Смок → крест → когда лонг занят → закрыть проход с CT-спавна",
+        );
+    });
+
+    it("добавляет точку броска, когда она указана", () => {
+        expect(
+            formatNade({
+                who: "роль 1",
+                type: "smoke",
+                to: "иксбокс",
+                from: "T-спавн",
+                when: "на старте",
+                why: "помочь выйти на кат",
+            }),
+        ).toBe(
+            "роль 1 → Смок → иксбокс (откуда: T-спавн) → на старте → помочь выйти на кат",
+        );
     });
 });

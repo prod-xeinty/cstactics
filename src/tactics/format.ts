@@ -1,50 +1,50 @@
 import type {
-  Difficulty,
-  Economy,
-  FaceitBand,
-  RatingSummary,
-  Side,
-  TeamSize,
-  TacticNade,
+    Difficulty,
+    Economy,
+    FaceitBand,
+    RatingSummary,
+    Side,
+    TeamSize,
+    TacticNade,
 } from "./model";
 
 const sideLabels: Record<Side, string> = {
-  T: "Атака · T",
-  CT: "Защита · CT",
+    T: "Атака · T",
+    CT: "Защита · CT",
 };
 
 const teamSizeLabels: Record<TeamSize, string> = {
-  2: "Дуо",
-  3: "Тройка",
-  4: "Четверо",
-  5: "Фулл стак",
+    2: "Дуо",
+    3: "Тройка",
+    4: "Четверо",
+    5: "Фулл стак",
 };
 
 const difficultyLabels: Record<Difficulty, string> = {
-  1: "Простая · 1/3",
-  2: "Средняя · 2/3",
-  3: "Сложная · 3/3",
+    1: "Простая · 1/3",
+    2: "Средняя · 2/3",
+    3: "Сложная · 3/3",
 };
 
 const economyLabels: Record<Economy, string> = {
-  eco: "Эко",
-  force: "Форс",
-  full: "Фулл бай",
-  any: "Любая экономика",
+    eco: "Эко",
+    force: "Форс",
+    full: "Фулл бай",
+    any: "Любая экономика",
 };
 
 const faceitBandLabels: Record<FaceitBand, string> = {
-  low: "Лоу · 1–3 лвл",
-  mid: "Мид · 4–7 лвл",
-  high: "Хай · 8–10 лвл",
+    low: "Лоу · 1–3 лвл",
+    mid: "Мид · 4–7 лвл",
+    high: "Хай · 8–10 лвл",
 };
 
 const nadeTypeLabels: Record<TacticNade["type"], string> = {
-  smoke: "Смок",
-  flash: "Флешка",
-  molotov: "Молик",
-  he: "Хаешка",
-  decoy: "Декой",
+    smoke: "Смок",
+    flash: "Флешка",
+    molotov: "Молик",
+    he: "Хаешка",
+    decoy: "Декой",
 };
 
 export const formatSide = (side: Side) => sideLabels[side];
@@ -55,28 +55,36 @@ export const formatFaceitBand = (band: FaceitBand) => faceitBandLabels[band];
 export const formatNadeType = (type: TacticNade["type"]) => nadeTypeLabels[type];
 
 const formatVotes = (count: number) => {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  const noun =
-    mod10 === 1 && mod100 !== 11
-      ? "голос"
-      : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
-        ? "голоса"
-        : "голосов";
+    const mod10 = count % 10;
+    const mod100 = count % 100;
+    const noun =
+        mod10 === 1 && mod100 !== 11
+            ? "голос"
+            : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)
+                ? "голоса"
+                : "голосов";
 
-  return `${count} ${noun}`;
+    return `${count} ${noun}`;
 };
 
 const formatScore = (score: number) => score.toFixed(1).replace(".", ",");
 
 export function formatRatingSummary(rating: RatingSummary) {
-  const enoughVotes = rating.voteCount >= 5;
+    const enoughVotes = rating.voteCount >= 5;
 
-  return {
-    works: enoughVotes ? formatScore(rating.works) : "мало голосов",
-    easy: enoughVotes ? formatScore(rating.easy) : "мало голосов",
-    votes: formatVotes(rating.voteCount),
-    enoughVotes,
-    demoLabel: "Демо-оценки",
-  };
+    return {
+        works: enoughVotes ? formatScore(rating.works) : "мало голосов",
+        easy: enoughVotes ? formatScore(rating.easy) : "мало голосов",
+        votes: formatVotes(rating.voteCount),
+        enoughVotes,
+        demoLabel: "Демо-оценки",
+    };
+}
+
+export function formatNade(nade: TacticNade): string {
+    const destination = nade.from
+        ? `${nade.to} (откуда: ${nade.from})`
+        : nade.to;
+
+    return `${nade.who} → ${formatNadeType(nade.type)} → ${destination} → ${nade.when} → ${nade.why}`;
 }
