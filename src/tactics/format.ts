@@ -5,6 +5,7 @@ import type {
   RatingSummary,
   Side,
   TeamSize,
+  TacticNade,
 } from "./model";
 
 const sideLabels: Record<Side, string> = {
@@ -38,11 +39,20 @@ const faceitBandLabels: Record<FaceitBand, string> = {
   high: "Хай · 8–10 лвл",
 };
 
+const nadeTypeLabels: Record<TacticNade["type"], string> = {
+  smoke: "Смок",
+  flash: "Флешка",
+  molotov: "Молик",
+  he: "Хаешка",
+  decoy: "Декой",
+};
+
 export const formatSide = (side: Side) => sideLabels[side];
 export const formatTeamSize = (teamSize: TeamSize) => teamSizeLabels[teamSize];
 export const formatDifficulty = (difficulty: Difficulty) => difficultyLabels[difficulty];
 export const formatEconomy = (economy: Economy) => economyLabels[economy];
 export const formatFaceitBand = (band: FaceitBand) => faceitBandLabels[band];
+export const formatNadeType = (type: TacticNade["type"]) => nadeTypeLabels[type];
 
 const formatVotes = (count: number) => {
   const mod10 = count % 10;
