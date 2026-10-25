@@ -31,6 +31,8 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 | `npm test` | Тесты (Vitest) |
 | `npm run db:generate` | Сгенерировать SQL-миграцию из `src/db/schema.ts` |
 | `npm run db:migrate:local` | Применить SQL-миграции из `migrations/` к локальной D1 |
+| `npm run backup:selftest` | Проверить всю цепочку бэкапа на локальной D1 |
+| `npm run backup:keygen` / `backup:decrypt` | Ключ для бэкапов / расшифровать бэкап (см. docs/ops/backup-restore.md) |
 | `npm run db:migrate:remote` | Применить миграции к боевой D1 (перед деплоем, если появились новые) |
 
 Перед первым запуском `dev:vinext` примени миграции к локальной базе: `npm run db:migrate:local`.
@@ -47,7 +49,7 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 
 ## Если что-то сломалось
 
-Сначала `/api/health`, потом логи по `X-Request-Id` — пошагово в [docs/ops/diagnostics.md](docs/ops/diagnostics.md). Там же лимиты бесплатного тарифа и как настроено предупреждение о них.
+Сначала `/api/health`, потом логи по `X-Request-Id` — пошагово в [docs/ops/diagnostics.md](docs/ops/diagnostics.md). Там же лимиты бесплатного тарифа и как настроено предупреждение о них. Бэкапы и восстановление базы — [docs/ops/backup-restore.md](docs/ops/backup-restore.md).
 
 ## Вход через Steam
 
