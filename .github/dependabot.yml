@@ -12,6 +12,11 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Сайт и CI работают на Node 22: типы держим на мажорной версии рантайма.
+      # Поднимаем вручную вместе с node-version в CI и engines в package.json.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "chore(deps)"
     labels: [бэк]
