@@ -2,7 +2,7 @@
   // Конфиг Cloudflare Workers. Секреты сюда НЕ кладём — только `wrangler secret put`.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "kollgg",
-  "main": "vinext/server/app-router-entry",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
@@ -22,6 +22,16 @@
   //   // Видео после модерации (публичный)
   //   { "binding": "MEDIA_PUBLIC", "bucket_name": "kollgg-media-public" }
   // ],
+  // Лимиты запросов (src/platform/rate-limiter-object.ts). Класс экспортируется из worker/index.ts.
+  "durable_objects": {
+    "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiterObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiterObject"] }],
+  // Публичные настройки (не секреты). Site key Turnstile — из панели Cloudflare.
+  // Пусто = Turnstile выключен (см. docs/security/app-security.md). Secret key — только `wrangler secret put TURNSTILE_SECRET_KEY`.
+  "vars": {
+    "TURNSTILE_SITE_KEY": ""
+  },
   "assets": {
     "directory": "dist/client",
     "html_handling": "none",

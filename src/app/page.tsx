@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import { getCurrentSession } from "@/auth/current-user";
+import { readCookie, SESSION_COOKIE } from "@/auth/session";
+import { CSRF_FIELD, csrfTokenFor } from "@/security/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +9,8 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const [h, params] = await Promise.all([headers(), searchParams]);
   const session = await getCurrentSession(h.get("cookie"));
+  const sessionToken = readCookie(h.get("cookie"), SESSION_COOKIE);
+  const csrf = session && sessionToken ? await csrfTokenFor(sessionToken) : null;
 
   return (
     <main>
@@ -15,6 +19,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       {params.login === "failed" && <p>Не вышло зайти через Steam. Попробуй ещё раз.</p>}
       {session ? (
         <form method="post" action="/api/auth/logout">
+          {csrf && <input type="hidden" name={CSRF_FIELD} value={csrf} />}
           <p>
             Ты зашёл как <b>{session.user.nickname}</b>
           </p>
@@ -22,7 +27,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
         </form>
       ) : (
         <p>
-          <a href="/api/auth/steam/login">Войти через Steam</a>
+          <a href="/login">Войти через Steam</a>
         </p>
       )}
     </main>

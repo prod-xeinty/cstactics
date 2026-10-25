@@ -1,4 +1,5 @@
 import { getPlatform } from "@/platform";
+import { turnstileConfig } from "@/auth/login-config";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,10 @@ export async function GET() {
     }
   }
 
+  // Настройка, а не проверка: показываем, включена ли капча (без ключей).
+  const turnstile = turnstileConfig(platform).mode;
+  if (turnstile === "misconfigured") checks.turnstile = "fail";
+
   const ok = Object.values(checks).every((v) => v !== "fail");
-  return Response.json({ ok, checks }, { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } });
+  return Response.json({ ok, checks, turnstile }, { status: ok ? 200 : 503, headers: { "Cache-Control": "no-store" } });
 }
