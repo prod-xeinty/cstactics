@@ -26,6 +26,8 @@ export interface RateLimitResult {
   remaining: number;
   /** Через сколько мс окно сбросится (для Retry-After). */
   retryAfterMs: number;
+  /** Первый отказ в этом окне — чтобы писать в лог один раз, а не на каждый запрос атаки. */
+  firstBlock?: boolean;
 }
 
 export interface RateLimiter {

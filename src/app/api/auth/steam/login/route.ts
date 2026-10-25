@@ -7,6 +7,7 @@ import { isSameOrigin } from "@/security/csrf";
 import { clientIp } from "@/security/client-ip";
 import { enforceRateLimit } from "@/security/rate-limit";
 import { TURNSTILE_FIELD, verifyTurnstile } from "@/security/turnstile";
+import { log } from "@/observability/log";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   const url = new URL(request.url);
   const turnstile = turnstileConfig(platform);
   if (turnstile.mode === "misconfigured") {
-    console.error("Turnstile: задан TURNSTILE_SITE_KEY, но нет секрета TURNSTILE_SECRET_KEY — вход закрыт");
+    log.error("turnstile_misconfigured", { hint: "задан TURNSTILE_SITE_KEY, но нет секрета TURNSTILE_SECRET_KEY — вход закрыт" });
     return redirect("/login?error=unavailable");
   }
   if (turnstile.mode === "on") {
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
       fetch,
     });
     if (!check.ok) {
-      console.warn("Turnstile не пройден:", check.reason);
+      log.warn("turnstile_failed", { reason: check.reason });
       return redirect("/login?error=captcha");
     }
   }

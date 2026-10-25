@@ -16,6 +16,7 @@ import {
 import { upsertSteamUser } from "@/users/repository";
 import { clientIp } from "@/security/client-ip";
 import { enforceRateLimit } from "@/security/rate-limit";
+import { log } from "@/observability/log";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
   try {
     return await handleCallback(request);
   } catch (err) {
-    console.error("steam login error:", err instanceof Error ? err.message : String(err));
+    log.error("steam_login_error", { error: err });
     return redirect("/?login=failed", [clearCookie(STATE_COOKIE)]);
   }
 }
@@ -42,7 +43,7 @@ async function handleCallback(request: Request): Promise<Response> {
   const cookieHeader = request.headers.get("cookie");
   const fail = (reason: string) => {
     // В лог только причина, без параметров запроса.
-    console.warn("steam login failed:", reason);
+    log.warn("steam_login_failed", { reason });
     return redirect("/?login=failed", [clearCookie(STATE_COOKIE)]);
   };
 

@@ -32,6 +32,14 @@
   "vars": {
     "TURNSTILE_SITE_KEY": ""
   },
+  // Логи Workers (бесплатно: 200 000 записей в сутки, хранение 3 дня). Параметры запросов из URL вырезаются:
+  // там бывает Steam ID (возврат из Steam). Как смотреть — docs/ops/diagnostics.md.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "redact_query_string": true,
+    "logs": { "invocation_logs": true }
+  },
   "assets": {
     "directory": "dist/client",
     "html_handling": "none",
