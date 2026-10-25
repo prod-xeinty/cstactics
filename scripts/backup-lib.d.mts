@@ -6,3 +6,5 @@ export function newKeyPair(): Promise<{ identity: string; recipient: string }>;
 export function expectedTables(migrationsDir?: string): string[];
 export function checkDump(sql: string, tables: string[]): Record<string, number>;
 export function combineExports(schemaSql: string, dataSql: string): string;
+export function isInside(path: string, dir: string, platform?: string): boolean;
+export function scrubUrls(text: unknown): string;

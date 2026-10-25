@@ -11,6 +11,7 @@ dist/
 .vinext/
 backup-out/
 *.sql.age
+/kollgg-*.sql
 .dev.vars
 next-env.d.ts
 *.tsbuildinfo

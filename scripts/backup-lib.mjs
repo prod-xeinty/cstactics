@@ -1,7 +1,21 @@
 // Бэкапы D1: шифрование (age, X25519) и проверка, что выгрузка восстанавливается.
 // Без побочных эффектов сети — используется в backup-run, backup-selftest и тестах.
 import { readFileSync, readdirSync } from "node:fs";
+import { posix, win32 } from "node:path";
 import { Decrypter, Encrypter, generateX25519Identity, identityToRecipient } from "age-encryption";
+
+/** Вырезать ссылки из вывода wrangler: `d1 export` печатает подписанную ссылку на открытую выгрузку. */
+export function scrubUrls(text) {
+  return String(text ?? "").replace(/https?:\/\/\S+/g, "[url]");
+}
+
+/** Лежит ли путь внутри папки (с учётом регистра путей на Windows). */
+export function isInside(path, dir, platform = process.platform) {
+  const p = platform === "win32" ? win32 : posix;
+  const norm = (x) => (platform === "win32" ? p.resolve(x).toLowerCase() : p.resolve(x));
+  const rel = p.relative(norm(dir), norm(path));
+  return rel === "" || (!rel.startsWith("..") && !p.isAbsolute(rel));
+}
 
 /** Публичные ключи получателей из security/backup-recipients.txt (строки age1…, комментарии # пропускаем). */
 export function parseRecipients(text) {

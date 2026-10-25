@@ -51,3 +51,23 @@ describe("бэкап D1", () => {
     await expect(encryptBackup("x", [])).rejects.toThrow(/нет получателей/);
   });
 });
+
+describe("бэкап: исправления после security-reviewer", () => {
+  it("isInside: внутри/снаружи, Windows без учёта регистра", async () => {
+    const { isInside } = await import("../scripts/backup-lib.mjs");
+    expect(isInside("/repo/k.txt", "/repo")).toBe(true);
+    expect(isInside("/repo/sub/k.txt", "/repo")).toBe(true);
+    expect(isInside("/home/me/k.txt", "/repo")).toBe(false);
+    expect(isInside("/repo-other/k.txt", "/repo")).toBe(false);
+    expect(isInside("C:\\Users\\Me\\cstactics\\k.txt", "c:\\users\\me\\cstactics", "win32")).toBe(true);
+  });
+});
+
+describe("бэкап: вывод wrangler не утекает", () => {
+  it("подписанная ссылка на выгрузку вырезается", async () => {
+    const { scrubUrls } = await import("../scripts/backup-lib.mjs");
+    const out = scrubUrls("You can also download your export from the following URL manually. This link will be valid for one hour: https://d1-exports.example/abc?X-Amz-Signature=deadbeef\nDone");
+    expect(out).not.toMatch(/https?:/);
+    expect(out).toContain("[url]");
+  });
+});
