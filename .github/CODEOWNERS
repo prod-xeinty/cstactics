@@ -10,6 +10,7 @@
 # Безопасность, CI, инфраструктура, авторизация — sK8le
 /.github/               @sK8le
 /.gitleaks.toml         @sK8le
+/.gitleaksignore        @sK8le
 /security/              @sK8le
 /scripts/audit.mjs      @sK8le
 /SECURITY.md            @sK8le
