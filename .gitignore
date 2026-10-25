@@ -8,6 +8,7 @@ dist/
 
 # vinext / wrangler
 .wrangler/
+.vinext/
 .dev.vars
 next-env.d.ts
 *.tsbuildinfo
