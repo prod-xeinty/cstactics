@@ -45,6 +45,10 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 
 Безопасность (секреты, зависимости, CodeQL, Dependabot) — [docs/security/devsecops.md](docs/security/devsecops.md). Зависимости локально: `npm run audit:deps`. Об уязвимостях — [SECURITY.md](SECURITY.md).
 
+## Если что-то сломалось
+
+Сначала `/api/health`, потом логи по `X-Request-Id` — пошагово в [docs/ops/diagnostics.md](docs/ops/diagnostics.md). Там же лимиты бесплатного тарифа и как настроено предупреждение о них.
+
 ## Вход через Steam
 
 - `/login` (капча Turnstile) → `POST /api/auth/steam/login` → Steam → `/api/auth/steam/callback` → сессия в cookie `__Host-session` (в базе только SHA-256 токена), живёт 30 дней.

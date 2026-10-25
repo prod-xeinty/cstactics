@@ -20,6 +20,7 @@ export class FixedWindowCounter {
       ok,
       remaining: Math.max(0, rule.limit - this.count),
       retryAfterMs: ok ? 0 : this.windowStart + rule.windowMs - now,
+      firstBlock: this.count === rule.limit + 1,
     };
   }
 }

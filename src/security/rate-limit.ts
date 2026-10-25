@@ -1,4 +1,5 @@
 import type { RateLimiter, RateLimitRule } from "@/platform";
+import { log } from "@/observability/log";
 
 // Правила лимитов. Голоса (#13) и анкета (#7) добавят свои строки сюда.
 export const RATE_LIMITS = {
@@ -26,10 +27,12 @@ export async function enforceRateLimit(
   try {
     result = await limiter.hit(`${name}:${subject}`, RATE_LIMITS[name]);
   } catch (err) {
-    console.error("rate limiter недоступен:", name, err instanceof Error ? err.message : String(err));
+    log.error("rate_limiter_unavailable", { rule: name, error: err });
     return null;
   }
   if (result.ok) return null;
+  // Субъект (IP/пользователь) не пишем — только какое правило сработало, и только первый отказ в окне.
+  if (result.firstBlock) log.warn("rate_limited", { rule: name });
   const retryAfter = Math.max(1, Math.ceil(result.retryAfterMs / 1000));
   return new Response("Слишком часто. Подожди немного и попробуй снова.", {
     status: 429,
