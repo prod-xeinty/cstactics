@@ -1,0 +1,94 @@
+# Автодеплой: после зелёного CI на пуше в main → миграции D1 → деплой воркера → проверка боевого сайта.
+# Нужны секреты окружения «production» CLOUDFLARE_API_TOKEN (права на деплой, см. docs/ops/deploy.md) и
+# CLOUDFLARE_ACCOUNT_ID. Окружение — только для ветки main: токен деплоя не достаётся workflow из других веток.
+# Пока секрета нет — прогон зелёный с пометкой «не настроено», деплой вручную как раньше.
+name: Деплой
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Деплои строго по одному, без отмены начатого (иначе можно оборвать миграцию).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  SITE_URL: https://kollgg.kollgg-probe-test.workers.dev
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  deploy:
+    name: Деплой на Cloudflare
+    # Только после успешного CI именно на пуше в main этого репозитория (не PR, не форк) — или вручную.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ env.SITE_URL }}
+    steps:
+      - name: Секреты на месте?
+        id: secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::Автодеплой не настроен: нужны секреты CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID (docs/ops/deploy.md)."
+            echo "Автодеплой **не настроен**: нет секретов \`CLOUDFLARE_API_TOKEN\` / \`CLOUDFLARE_ACCOUNT_ID\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Ровно тот коммит, на котором прошёл CI (а не «последний main» на момент запуска).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      # Без установочных скриптов пакетов: дальше шаги получают токен деплоя.
+      - name: Зависимости и сборка
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          npm ci --ignore-scripts
+          npm run build:vinext
+
+      # Миграции до деплоя: новый код может рассчитывать на новые таблицы. Миграции пишем только добавляющими
+      # (старый код должен работать на новой схеме) — тогда откат кода не требует отката базы.
+      - name: Миграции D1
+        if: steps.secrets.outputs.ready == 'true'
+        run: npx wrangler d1 migrations apply DB --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Деплой
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm run deploy:vinext
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Проверка боевого сайта
+        if: steps.secrets.outputs.ready == 'true'
+        run: node scripts/smoke-prod.mjs "$SITE_URL"
