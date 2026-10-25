@@ -58,6 +58,7 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 - `src/platform/` — интерфейсы платформы (`Database`, `ObjectStorage`). Бизнес-логика ходит в базу и хранилище только через них; Cloudflare-биндинги трогает один файл `cloudflare.ts`.
 - `src/auth/`, `src/users/` — вход через Steam и сессии.
 - `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Сейчас там `users`, `sessions`, `openid_nonces`; остальное — #11.
+- `.claude/agents/` — агенты Claude Code: `security-reviewer` (ревью безопасности PR) и `tactic-checker` (проверка тактик по правилам контента). Только читают, вызываются сами или явно: «пусть security-reviewer посмотрит PR #N».
 - `tests/` — тесты; база в тестах — встроенный SQLite из Node с настоящими миграциями.
 
 ## Пробный деплой на Cloudflare

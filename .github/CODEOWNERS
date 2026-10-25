@@ -20,5 +20,6 @@
 /wrangler.jsonc         @sK8le
 /migrations/            @sK8le @prod-xeinty
 
-# Единый источник правды — оба
+# Агенты Claude Code и единый источник правды — оба
+/.claude/               @sK8le @prod-xeinty
 /AGENTS.md              @sK8le @prod-xeinty
