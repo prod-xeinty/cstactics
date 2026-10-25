@@ -14,7 +14,9 @@ export function isInside(path, dir, platform = process.platform) {
   const p = platform === "win32" ? win32 : posix;
   const norm = (x) => (platform === "win32" ? p.resolve(x).toLowerCase() : p.resolve(x));
   const rel = p.relative(norm(dir), norm(path));
-  return rel === "" || (!rel.startsWith("..") && !p.isAbsolute(rel));
+  // «..имя» — это файл внутри папки, выше — только «..» и «../…».
+  const up = rel === ".." || rel.startsWith(`..${p.sep}`);
+  return rel === "" || (!up && !p.isAbsolute(rel));
 }
 
 /** Публичные ключи получателей из security/backup-recipients.txt (строки age1…, комментарии # пропускаем). */

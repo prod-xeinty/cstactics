@@ -59,6 +59,8 @@ describe("бэкап: исправления после security-reviewer", () =
     expect(isInside("/repo/sub/k.txt", "/repo")).toBe(true);
     expect(isInside("/home/me/k.txt", "/repo")).toBe(false);
     expect(isInside("/repo-other/k.txt", "/repo")).toBe(false);
+    expect(isInside("/repo/..kollgg.sql", "/repo")).toBe(true);
+    expect(isInside("/repo/../k.txt", "/repo")).toBe(false);
     expect(isInside("C:\\Users\\Me\\cstactics\\k.txt", "c:\\users\\me\\cstactics", "win32")).toBe(true);
   });
 });

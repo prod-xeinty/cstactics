@@ -38,6 +38,8 @@
 4. **Окружение и секреты (prod-xeinty, нужен Admin):**
    1. https://github.com/prod-xeinty/cstactics/settings/environments → New environment → `backup` → **Deployment branches and tags: Selected → `main`**. Так токен с правом записи в D1 не достанется workflow из другой ветки.
    2. В этом окружении → Environment secrets: `CF_BACKUP_TOKEN` = токен из п. 3, `CLOUDFLARE_ACCOUNT_ID`.
+   3. **Не** класть `CF_BACKUP_TOKEN` в секреты уровня репозитория (Settings → Secrets → Actions → Repository secrets): их получает любой workflow с любой ветки, и окружение тогда ничего не защищает. Если уже положил — удали оттуда.
+   4. Окружение создать **до** первого запуска: иначе первый прогон создаст его сам, без ограничения по веткам.
 5. Actions → «Бэкап D1» → **Run workflow** → в Summary таблица таблиц и число строк, в Artifacts — файл. Упало с ошибкой авторизации — проверь право токена.
 6. Когда первый бэкап прошёл: Settings → Secrets and variables → Actions → **Variables** → `BACKUP_REQUIRED` = `1`. С этого момента пропавший ключ или секрет — **красный** прогон (письмо), а не тихое «не настроено».
 
@@ -62,7 +64,7 @@ npx wrangler d1 time-travel restore kollgg --timestamp=2026-10-25T18:00:00Z
    ```
    npm run backup:decrypt -- kollgg-ДАТА.sql.age C:\Users\<ты>\kollgg-backup-key.txt C:\Users\<ты>\Downloads\kollgg-ДАТА.sql
    ```
-   **Просмотреть файл** перед восстановлением: только `CREATE` / `INSERT` / `PRAGMA defer_foreign_keys`, никаких `DROP`/`DELETE`/`UPDATE`; поиск `'admin'` и `'moderator'` — только те, кто должен быть.
+   **Просмотреть файл** перед восстановлением: только `CREATE` / `INSERT` / `PRAGMA defer_foreign_keys`; из `DELETE` допустим **только** `DELETE FROM sqlite_sequence;` (его пишет сама выгрузка D1), никаких `DROP` / `UPDATE` / других `DELETE`; поиск `'admin'` и `'moderator'` — только те, кто должен быть.
 4. **Восстанавливать в новую базу**, а не поверх старой:
    ```
    npx wrangler d1 create kollgg-restore
