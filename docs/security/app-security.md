@@ -25,7 +25,9 @@ if (!(await isValidCsrfToken(sessionToken, await submittedCsrfToken(request)))) 
 // + Turnstile, если форма публичная (анкета): verifyTurnstile({ ..., expectedAction: "submit" })
 ```
 
-GET ничего не меняет. В форму залогиненного кладём `<input type="hidden" name="csrf" value={await csrfTokenFor(sessionToken)} />`.
+GET ничего не меняет. **Server actions (`"use server"`) для изменяющих операций не используем**: их вызов идёт мимо проверок выше. Если всё же понадобятся — в каждом экшене вручную Origin + CSRF + лимит.
+
+Страницы с данными сессии (ник, CSRF-токен) не должны кешироваться в общем кеше: vinext отдаёт динамические страницы с `Cache-Control: private, no-store` — не ставим на них `use cache` и не включаем CDN-кеш для них. В форму залогиненного кладём `<input type="hidden" name="csrf" value={await csrfTokenFor(sessionToken)} />`.
 
 ## Лимиты сейчас
 
@@ -35,7 +37,7 @@ GET ничего не меняет. В форму залогиненного к�
 | `loginCallback` | IP | 10 / мин |
 | `logout` | IP | 30 / мин |
 
-IP — из `CF-Connecting-IP` (ставит Cloudflare). Если Durable Object недоступен, запрос **пропускаем** и пишем в лог (fail-open): лучше пропустить спам, чем уронить вход всем. Для голосов и анкеты можно выбрать fail-closed.
+IP — из `CF-Connecting-IP` (ставит Cloudflare); IPv6 сводится к подсети /64. `/api/health` проверяет лимитер (`rate_limiter`), чтобы потеря биндинга не прошла незаметно. Если Durable Object недоступен, запрос **пропускаем** и пишем в лог (fail-open): лучше пропустить спам, чем уронить вход всем. Для голосов и анкеты можно выбрать fail-closed.
 
 Бесплатный тариф Durable Objects: 100 000 запросов в сутки (каждый лимитируемый запрос = 1 запрос к DO). В хранилище DO не пишем — там всего 100 000 записей в сутки.
 
@@ -44,6 +46,7 @@ IP — из `CF-Connecting-IP` (ставит Cloudflare). Если Durable Objec
 - **Выключен**, пока в `wrangler.jsonc` → `vars.TURNSTILE_SITE_KEY` пусто. `/api/health` показывает `"turnstile": "off"`.
 - **Включён**: site key задан и есть секрет `TURNSTILE_SECRET_KEY` (`npx wrangler secret put TURNSTILE_SECRET_KEY`).
 - **Ошибка настройки**: site key есть, секрета нет → вход закрыт («временно не работает»), `/api/health` → `"turnstile": "fail"`. Специально: без капчи не пускаем, раз её включили.
+- Тестовый секрет пропускает любой токен, поэтому принимается **только на localhost**; на любом другом хосте вход с ним отклоняется.
 - Локально — тестовые ключи Cloudflare в `.dev.vars`: site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA` (всегда «да») или `2x0000000000000000000000000000000AA` (всегда «нет»).
 
 Вход: `/login` (форма + виджет) → `POST /api/auth/steam/login` (Origin, лимит, Turnstile) → Steam → `/api/auth/steam/callback` (лимит, state, подпись Steam). Старые ссылки `GET /api/auth/steam/login` перенаправляются на `/login`.

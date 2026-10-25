@@ -37,8 +37,11 @@ export async function POST(request: Request) {
     return redirect("/login?error=unavailable");
   }
   if (turnstile.mode === "on") {
-    const form = await request.formData();
-    const token = form.get(TURNSTILE_FIELD);
+    // Битое тело или не форма — считаем, что токена нет (а не 500).
+    const token = await request
+      .formData()
+      .then((f) => f.get(TURNSTILE_FIELD))
+      .catch(() => null);
     const check = await verifyTurnstile({
       secret: turnstile.secret,
       token: typeof token === "string" ? token : null,

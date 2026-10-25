@@ -18,7 +18,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   } catch {
     // обычный next dev без Cloudflare — капчи нет
   }
-  const error = params.error ? ERRORS[params.error] : undefined;
+  // Только свои ключи: ?error=__proto__ не должен доставать что-то из прототипа объекта.
+  const error = params.error && Object.hasOwn(ERRORS, params.error) ? ERRORS[params.error] : undefined;
 
   return (
     <main>

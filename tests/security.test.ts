@@ -169,3 +169,58 @@ describe("защитные заголовки", () => {
     expect(res.headers.get("Location")).toBe("/");
   });
 });
+
+describe("исправления после security-reviewer", () => {
+  const answer = (data: object) => vi.fn(async () => Response.json(data)) as unknown as typeof fetch;
+  const TEST_YES = "1x0000000000000000000000000000000AA";
+
+  it("тестовый секрет на не-localhost — отказ, даже не спрашиваем Cloudflare", async () => {
+    const f = vi.fn();
+    const r = await verifyTurnstile({ secret: TEST_YES, token: "t", expectedHostname: "kollgg.test", fetch: f as never });
+    expect(r).toEqual({ ok: false, reason: "test_key_outside_localhost" });
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("тестовый секрет на localhost — ок с hostname example.com", async () => {
+    const r = await verifyTurnstile({
+      secret: TEST_YES,
+      token: "t",
+      expectedHostname: "localhost",
+      expectedAction: "login",
+      fetch: answer({ success: true, hostname: "example.com" }),
+    });
+    expect(r).toEqual({ ok: true });
+  });
+
+  it("боевой секрет: hostname example.com — отказ", async () => {
+    const r = await verifyTurnstile({
+      secret: "0x4AAAAAAA-real-secret",
+      token: "t",
+      expectedHostname: "kollgg.test",
+      fetch: answer({ success: true, hostname: "example.com", action: "login" }),
+    });
+    expect(r).toEqual({ ok: false, reason: "bad_hostname" });
+  });
+
+  it("боевой секрет: action отсутствует — отказ, если action ожидался", async () => {
+    const r = await verifyTurnstile({
+      secret: "0x4AAAAAAA-real-secret",
+      token: "t",
+      expectedHostname: "kollgg.test",
+      expectedAction: "submit",
+      fetch: answer({ success: true, hostname: "kollgg.test" }),
+    });
+    expect(r).toEqual({ ok: false, reason: "bad_action" });
+  });
+
+  it("IPv6 сводится к /64, IPv4 остаётся как есть", async () => {
+    const { clientIp, ipv6Prefix64 } = await import("@/security/client-ip");
+    const req = (ip: string) => new Request("https://x.test", { headers: { "cf-connecting-ip": ip } });
+    expect(clientIp(req("1.2.3.4"))).toBe("1.2.3.4");
+    expect(clientIp(req("2001:db8:aa:bb:1:2:3:4"))).toBe("2001:db8:aa:bb::/64");
+    expect(clientIp(req("2001:db8:aa:bb:ffff::1"))).toBe("2001:db8:aa:bb::/64");
+    expect(ipv6Prefix64("2001:db8::1")).toBe("2001:db8:0:0::/64");
+    expect(ipv6Prefix64("::1")).toBe("0:0:0:0::/64");
+    expect(clientIp(new Request("https://x.test"))).toBe("unknown");
+  });
+});

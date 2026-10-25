@@ -38,9 +38,10 @@ function r2(bucket: R2Bucket): ObjectStorage {
   };
 }
 
-function durableRateLimiter(ns: DurableObjectNamespace<RateLimiterObject>): RateLimiter {
+function durableRateLimiter(ns: DurableObjectNamespace<RateLimiterObject> | undefined): RateLimiter {
   return {
     async hit(key, rule) {
+      if (!ns) throw new Error("нет биндинга RATE_LIMITER (wrangler.jsonc → durable_objects)");
       const stub = ns.get(ns.idFromName(key));
       return stub.hit(rule);
     },
@@ -52,7 +53,7 @@ export function getPlatform(): Platform {
   const optional = env as unknown as {
     MEDIA_PRIVATE?: R2Bucket;
     MEDIA_PUBLIC?: R2Bucket;
-    RATE_LIMITER: DurableObjectNamespace<RateLimiterObject>;
+    RATE_LIMITER?: DurableObjectNamespace<RateLimiterObject>;
   } & Partial<Record<SecretName | PublicVarName, string>>;
   const buckets: Record<MediaBucket, R2Bucket | undefined> = {
     private: optional.MEDIA_PRIVATE,

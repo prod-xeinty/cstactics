@@ -40,6 +40,14 @@ export async function GET() {
     }
   }
 
+  // Лимитер: один запрос к Durable Object. Если биндинг потерялся, лимиты молча стали бы fail-open — тут это видно.
+  try {
+    await platform.rateLimiter.hit("health:probe", { limit: 1_000_000, windowMs: 60_000 });
+    checks.rate_limiter = "ok";
+  } catch {
+    checks.rate_limiter = "fail";
+  }
+
   // Настройка, а не проверка: показываем, включена ли капча (без ключей).
   const turnstile = turnstileConfig(platform).mode;
   if (turnstile === "misconfigured") checks.turnstile = "fail";
