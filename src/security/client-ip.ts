@@ -5,6 +5,9 @@
 export function clientIp(request: Request): string {
   const ip = request.headers.get("cf-connecting-ip");
   if (!ip) return "unknown";
+  // IPv4 в IPv6-записи (::ffff:1.2.3.4) — это обычный IPv4-клиент.
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip);
+  if (mapped) return mapped[1];
   return ip.includes(":") ? ipv6Prefix64(ip) : ip;
 }
 

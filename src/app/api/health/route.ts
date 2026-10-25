@@ -3,6 +3,11 @@ import { turnstileConfig } from "@/auth/login-config";
 
 export const dynamic = "force-dynamic";
 
+// Проверка лимитера стоит запрос к Durable Object — кешируем результат в памяти изолята,
+// чтобы частые запросы к /api/health не тратили бесплатную квоту DO.
+const RATE_LIMITER_PROBE_TTL_MS = 30_000;
+let rateLimiterProbe: { at: number; ok: boolean } | null = null;
+
 // Проверка, что приложение видит базу и хранилище. Без секретов и без данных пользователей.
 export async function GET() {
   const checks: Record<string, "ok" | "fail" | "skipped"> = {};
@@ -41,12 +46,17 @@ export async function GET() {
   }
 
   // Лимитер: один запрос к Durable Object. Если биндинг потерялся, лимиты молча стали бы fail-open — тут это видно.
-  try {
-    await platform.rateLimiter.hit("health:probe", { limit: 1_000_000, windowMs: 60_000 });
-    checks.rate_limiter = "ok";
-  } catch {
-    checks.rate_limiter = "fail";
+  const now = Date.now();
+  if (!rateLimiterProbe || now - rateLimiterProbe.at > RATE_LIMITER_PROBE_TTL_MS) {
+    let ok = true;
+    try {
+      await platform.rateLimiter.hit("health:probe", { limit: 1_000_000, windowMs: 60_000 });
+    } catch {
+      ok = false;
+    }
+    rateLimiterProbe = { at: now, ok };
   }
+  checks.rate_limiter = rateLimiterProbe.ok ? "ok" : "fail";
 
   // Настройка, а не проверка: показываем, включена ли капча (без ключей).
   const turnstile = turnstileConfig(platform).mode;

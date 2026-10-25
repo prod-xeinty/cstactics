@@ -221,6 +221,7 @@ describe("исправления после security-reviewer", () => {
     expect(clientIp(req("2001:db8:aa:bb:ffff::1"))).toBe("2001:db8:aa:bb::/64");
     expect(ipv6Prefix64("2001:db8::1")).toBe("2001:db8:0:0::/64");
     expect(ipv6Prefix64("::1")).toBe("0:0:0:0::/64");
+    expect(clientIp(req("::ffff:1.2.3.4"))).toBe("1.2.3.4");
     expect(clientIp(new Request("https://x.test"))).toBe("unknown");
   });
 });
