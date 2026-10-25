@@ -9,6 +9,9 @@ dist/
 # vinext / wrangler
 .wrangler/
 .vinext/
+backup-out/
+*.sql.age
+/kollgg-*.sql
 .dev.vars
 next-env.d.ts
 *.tsbuildinfo

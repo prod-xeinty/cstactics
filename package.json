@@ -21,7 +21,10 @@
     "test": "vitest run",
     "lint": "eslint .",
     "check": "npm run typecheck && npm run lint && npm test && npm run build:vinext",
-    "audit:deps": "node scripts/audit.mjs"
+    "audit:deps": "node scripts/audit.mjs",
+    "backup:keygen": "node scripts/backup-keygen.mjs",
+    "backup:decrypt": "node scripts/backup-decrypt.mjs",
+    "backup:selftest": "node scripts/backup-selftest.mjs"
   },
   "dependencies": {
     "@vinext/cloudflare": "1.2.0",
@@ -40,6 +43,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "6.1.2",
     "@vitejs/plugin-rsc": "0.5.38",
+    "age-encryption": "0.3.1",
     "drizzle-kit": "0.31.11",
     "eslint": "10.13.0",
     "eslint-plugin-react-hooks": "7.1.1",
