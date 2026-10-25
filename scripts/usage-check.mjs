@@ -13,7 +13,7 @@ import {
   usageVariables,
 } from "./usage-lib.mjs";
 
-const { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_STEP_SUMMARY } = process.env;
+const { CF_ANALYTICS_TOKEN, CLOUDFLARE_ACCOUNT_ID, GITHUB_TOKEN, GITHUB_REPOSITORY, GITHUB_STEP_SUMMARY } = process.env;
 const threshold = Number(process.env.USAGE_THRESHOLD ?? "0.7");
 const assignee = process.env.USAGE_ASSIGNEE ?? "";
 
@@ -22,16 +22,16 @@ function summary(text) {
   if (GITHUB_STEP_SUMMARY) appendFileSync(GITHUB_STEP_SUMMARY, `${text}\n`);
 }
 
-if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
-  console.log("::warning::Проверка лимитов не настроена: нужны секреты CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID (docs/ops/diagnostics.md).");
-  summary("Проверка лимитов Cloudflare **не настроена**: нет секретов `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.");
+if (!CF_ANALYTICS_TOKEN || !CLOUDFLARE_ACCOUNT_ID) {
+  console.log("::warning::Проверка лимитов не настроена: нужны секреты CF_ANALYTICS_TOKEN и CLOUDFLARE_ACCOUNT_ID (docs/ops/diagnostics.md).");
+  summary("Проверка лимитов Cloudflare **не настроена**: нет секретов `CF_ANALYTICS_TOKEN` / `CLOUDFLARE_ACCOUNT_ID`.");
   process.exit(0);
 }
 
 const vars = usageVariables(CLOUDFLARE_ACCOUNT_ID);
 const res = await fetch(GRAPHQL_ENDPOINT, {
   method: "POST",
-  headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`, "Content-Type": "application/json" },
+  headers: { Authorization: `Bearer ${CF_ANALYTICS_TOKEN}`, "Content-Type": "application/json" },
   body: JSON.stringify({ query: USAGE_QUERY, variables: vars }),
 });
 if (!res.ok) {
@@ -57,19 +57,28 @@ const gh = (path, init = {}) =>
     headers: { Authorization: `Bearer ${GITHUB_TOKEN}`, Accept: "application/vnd.github+json", ...(init.headers ?? {}) },
   });
 
+async function ghJson(path, init) {
+  const res = await gh(path, init);
+  if (!res.ok) {
+    console.error(`GitHub API ${init?.method ?? "GET"} ${path}: ${res.status}`);
+    process.exit(1); // тревога не должна пропасть молча
+  }
+  return res.json();
+}
+
 const body = issueBody(rows, vars.date, threshold);
-const open = await (await gh("/issues?state=open&per_page=100")).json();
-const existing = Array.isArray(open) ? open.find((i) => i.title === ISSUE_TITLE && !i.pull_request) : undefined;
+// Ищем только issue, созданные этим workflow: репозиторий публичный, и чужой issue с тем же названием
+// не должен перехватить тревогу.
+const open = await ghJson("/issues?state=open&creator=github-actions%5Bbot%5D&per_page=100");
+const existing = open.find((i) => i.title === ISSUE_TITLE && !i.pull_request && i.user?.login === "github-actions[bot]");
 if (existing) {
-  await gh(`/issues/${existing.number}/comments`, { method: "POST", body: JSON.stringify({ body }) });
+  await ghJson(`/issues/${existing.number}/comments`, { method: "POST", body: JSON.stringify({ body }) });
   summary(`\nДобавлен комментарий в #${existing.number}.`);
 } else {
-  const created = await (
-    await gh("/issues", {
-      method: "POST",
-      body: JSON.stringify({ title: ISSUE_TITLE, body, labels: ["бэк", "важно"], assignees: assignee ? [assignee] : [] }),
-    })
-  ).json();
+  const created = await ghJson("/issues", {
+    method: "POST",
+    body: JSON.stringify({ title: ISSUE_TITLE, body, labels: ["бэк", "важно"], assignees: assignee ? [assignee] : [] }),
+  });
   summary(`\nСоздан issue #${created.number}.`);
 }
 console.log("::warning::Расход близко к бесплатному лимиту Cloudflare — см. issue.");

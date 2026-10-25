@@ -1,5 +1,6 @@
 # Расход бесплатных лимитов Cloudflare: каждые 6 часов. ≥ 70% → issue (GitHub пришлёт письмо).
-# Нужны секреты CLOUDFLARE_API_TOKEN (право Account Analytics: Read) и CLOUDFLARE_ACCOUNT_ID.
+# Нужны секреты CF_ANALYTICS_TOKEN (только право Account Analytics: Read) и CLOUDFLARE_ACCOUNT_ID.
+# Токен — отдельный от токена деплоя: задаче по расписанию не нужно право менять воркер.
 name: Лимиты Cloudflare
 
 on:
@@ -32,7 +33,7 @@ jobs:
       - name: Проверить расход
         run: node scripts/usage-check.mjs
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ANALYTICS_TOKEN: ${{ secrets.CF_ANALYTICS_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USAGE_THRESHOLD: "0.7"

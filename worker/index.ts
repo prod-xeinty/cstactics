@@ -24,6 +24,7 @@ export default {
     const requestId = requestIdFrom(request);
     return runWithRequestContext({ requestId }, async () => {
       const path = new URL(request.url).pathname;
+      const started = Date.now();
       let response: Response;
       try {
         response = await handler.fetch(request, env, ctx);
@@ -35,6 +36,9 @@ export default {
         log.error("server_error", { method: request.method, path, status: response.status });
         if (wantsHtmlPage(request)) return withSecurityHeaders(errorPage(requestId, response.status));
       }
+      // Своя запись о запросе вместо встроенной (invocation_logs выключены): только метод, путь, статус и время —
+      // ни заголовков, ни параметров, ни IP.
+      log.info("request", { method: request.method, path, status: response.status, ms: Date.now() - started });
       const res = withSecurityHeaders(response);
       res.headers.set("X-Request-Id", requestId);
       return res;

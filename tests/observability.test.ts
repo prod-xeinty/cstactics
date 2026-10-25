@@ -105,3 +105,25 @@ describe("лимит: в лог только первый отказ в окне
     expect(flags).toEqual([false, false, true, false, false]);
   });
 });
+
+describe("исправления после security-reviewer (#32)", () => {
+  it("x-forwarded-for, ник, аватар, user-agent — скрыты", () => {
+    const out = redact({ "x-forwarded-for": "1.2.3.4", nickname: "s1mple", personaname: "x", avatarUrl: "u", "user-agent": "ua" }) as Record<string, unknown>;
+    expect(Object.values(out).every((v) => v === "[скрыто]")).toBe(true);
+  });
+
+  it("IP, другие форматы Steam ID и параметры относительных путей вычищаются из текста", () => {
+    const s = redact(
+      "from 10.1.2.3 and 2001:db8:aa:bb::1 user STEAM_0:1:12345 [U:1:24691] path /api/auth/steam/callback?state=abc&openid.sig=AAAA",
+    ) as string;
+    for (const bad of ["10.1.2.3", "2001:db8", "STEAM_0", "[U:1:", "state=", "openid.sig"]) expect(s, bad).not.toContain(bad);
+    expect(s).toContain("/api/auth/steam/callback");
+  });
+
+  it("поле, которое бросает при чтении, не роняет логгер", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const evil = Object.defineProperty({}, "x", { enumerable: true, get() { throw new Error("boom"); } });
+    expect(() => log.error("evil", { evil })).not.toThrow();
+    expect(spy.mock.calls[0][0]).toMatchObject({ event: "evil", logError: expect.any(String) });
+  });
+});

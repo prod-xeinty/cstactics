@@ -22,7 +22,7 @@
 
 **Панель Cloudflare** → Workers & Pages → `kollgg` → **Logs** (Workers Logs):
 - поиск по `requestId` = код из страницы ошибки — наши записи;
-- встроенные записи о запросах (метод, путь, статус, время, CPU) — тот же `cf-ray` в метаданных;
+- `event = request` — запись о каждом запросе (метод, путь, статус, время в мс);
 - фильтр `level = error` — все ошибки за период; `event = server_error` — ответы 5xx.
 
 Хранение — **3 дня**, до 200 000 записей в сутки (бесплатный тариф). Старше — не найти.
@@ -33,6 +33,7 @@
 
 | Событие | Уровень | Что значит |
 |---|---|---|
+| `request` | info | каждый запрос: метод, путь, статус, `ms` |
 | `server_error` | error | ответ 5xx (путь, статус) |
 | `unhandled_error` | error | исключение вылетело мимо vinext |
 | `session_lookup_failed` | error | не удалось проверить сессию (база не отвечает / нет таблиц) — игрок видит «не вошёл» |
@@ -44,7 +45,17 @@
 | `rate_limiter_unavailable` | error | Durable Object не ответил — лимиты пропускают (fail-open) |
 
 ### Что в логи не попадает
-Логгер (`src/observability/log.ts`) вычищает: cookie, токены, секреты, CSRF, Steam ID (и поля, и внутри текста), IP, email, параметры запроса из URL, длинные токеноподобные строки. Встроенные записи Cloudflare — с `redact_query_string`: параметры URL (там бывает Steam ID на возврате из Steam) вырезаются. **Не логируй объекты запроса/пользователя целиком** — только нужные поля через `log.*`.
+**Гарантия только для записей через `log.*`** (`src/observability/log.ts`): скрываются поля с cookie, токенами, секретами, CSRF, Steam ID, IP (в т.ч. `x-forwarded-for`), email, ником и аватаром Steam, user-agent; в тексте вычищаются Steam ID (`7656119…`, `STEAM_0:…`, `[U:1:…]`), IPv4/IPv6, параметры URL (и в относительных путях), длинные токеноподобные строки.
+
+Правила:
+- **не логируй объекты целиком** (запрос, заголовки, пользователя) — только нужные поля через `log.*`;
+- **не клади данные игрока в текст ошибки** (`throw new Error(...)`): vinext сам пишет ошибки рендера через `console.error` со стеком, мимо нашей вычистки;
+- встроенные записи Cloudflare о запросах **выключены** (`invocation_logs: false`): не проверено, что в них нет cookie и IP. Включать только после проверки на проде (см. ниже).
+
+### Проверка после деплоя (один раз)
+1. Открыть сайт, войти, затем зайти на `/api/health?x=1`.
+2. Панель → Logs: убедиться, что в записях `request` нет `?x=1`, cookie, IP и Steam ID.
+3. Если захотим встроенные записи: включить `invocation_logs: true` на время, повторить шаги 1–2 и посмотреть поля `$workers.event.request.*`. Есть cookie — выключить обратно; есть IP или гео — записать в вопрос по 152-ФЗ (#27).
 
 ## 3. Частые поломки
 
@@ -74,11 +85,11 @@
 Предупреждение: workflow **«Лимиты Cloudflare»** (`.github/workflows/usage-check.yml`) каждые 6 часов спрашивает расход через Cloudflare GraphQL Analytics и при **≥ 70%** открывает issue «Лимиты Cloudflare: …» на sK8le (GitHub пришлёт письмо); если issue уже открыт — дописывает комментарий. Таблица расхода — в Summary каждого прогона.
 
 ### Настройка (один раз)
-1. **sK8le:** Cloudflare → My Profile → API Tokens → Create Token → Custom token: право **Account → Account Analytics → Read**, ресурс — свой аккаунт. Account ID — на главной панели Cloudflare справа (или `npx wrangler whoami`).
-2. **prod-xeinty (нужен Admin репо):** GitHub → Settings → Secrets and variables → Actions → New repository secret: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+1. **sK8le:** Cloudflare → My Profile → API Tokens → Create Token → Custom token: **только** право **Account → Account Analytics → Read**, ресурс — свой аккаунт. Это **отдельный** токен: не тот, что будет для деплоя (у задачи по расписанию не должно быть прав менять воркер). Account ID — на главной панели Cloudflare справа (или `npx wrangler whoami`).
+2. **prod-xeinty (нужен Admin репо):** GitHub → Settings → Secrets and variables → Actions → New repository secret: `CF_ANALYTICS_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 3. Actions → «Лимиты Cloudflare» → **Run workflow**. Должна появиться таблица расхода. Если упало с `Cloudflare GraphQL: …` — неверное право токена или поле запроса: пришлите текст ошибки.
 
-Пока секретов нет, workflow не падает, а пишет «не настроено».
+Пока секретов нет, workflow не падает, а пишет «не настроено». Issue ищется только среди созданных самим workflow (`github-actions[bot]`): чужой issue с тем же названием тревогу не перехватит. Ошибка GitHub API → прогон красный (письмо о падении), а не тихий пропуск.
 
 R2 и Queues в проверке появятся вместе с ними (#12, фоновые задачи).
 
