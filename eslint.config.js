@@ -36,6 +36,14 @@ export default tseslint.config(
       "no-eval": "error",
       "no-implied-eval": "error",
       "no-new-func": "error",
+      // Пользовательский текст (тактики, ники) никогда не выводим как HTML — только через JSX.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message: "Не выводим HTML строкой: пользовательский текст только через JSX (AGENTS.md, раздел 11, п. 6).",
+        },
+      ],
     },
   },
 );

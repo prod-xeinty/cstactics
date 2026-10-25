@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
-import type { Database, MediaBucket, ObjectStorage, Platform, SecretName } from "./types";
+import type { RateLimiterObject } from "./rate-limiter-object";
+import type { Database, MediaBucket, ObjectStorage, Platform, PublicVarName, RateLimiter, SecretName } from "./types";
 
 // Единственное место, где мы трогаем Cloudflare-биндинги.
 function d1(binding: D1Database): Database {
@@ -37,12 +38,23 @@ function r2(bucket: R2Bucket): ObjectStorage {
   };
 }
 
+function durableRateLimiter(ns: DurableObjectNamespace<RateLimiterObject> | undefined): RateLimiter {
+  return {
+    async hit(key, rule) {
+      if (!ns) throw new Error("нет биндинга RATE_LIMITER (wrangler.jsonc → durable_objects)");
+      const stub = ns.get(ns.idFromName(key));
+      return stub.hit(rule);
+    },
+  };
+}
+
 export function getPlatform(): Platform {
   // R2-бакеты могут быть не подключены (см. wrangler.jsonc), поэтому типизируем их как необязательные.
   const optional = env as unknown as {
     MEDIA_PRIVATE?: R2Bucket;
     MEDIA_PUBLIC?: R2Bucket;
-  } & Partial<Record<SecretName, string>>;
+    RATE_LIMITER?: DurableObjectNamespace<RateLimiterObject>;
+  } & Partial<Record<SecretName | PublicVarName, string>>;
   const buckets: Record<MediaBucket, R2Bucket | undefined> = {
     private: optional.MEDIA_PRIVATE,
     public: optional.MEDIA_PUBLIC,
@@ -57,5 +69,10 @@ export function getPlatform(): Platform {
       const v = optional[name];
       return typeof v === "string" && v.length > 0 ? v : undefined;
     },
+    publicVar: (name) => {
+      const v = optional[name];
+      return typeof v === "string" && v.length > 0 ? v : undefined;
+    },
+    rateLimiter: durableRateLimiter(optional.RATE_LIMITER),
   };
 }

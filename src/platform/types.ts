@@ -9,8 +9,29 @@ export interface Database {
   run(sql: string, params?: readonly unknown[]): Promise<{ changes: number }>;
 }
 
-/** Имена серверных секретов и настроек. Значения — только в Workers Secrets / .dev.vars. */
-export type SecretName = "STEAM_API_KEY";
+/** Имена серверных секретов. Значения — только в Workers Secrets / .dev.vars. */
+export type SecretName = "STEAM_API_KEY" | "TURNSTILE_SECRET_KEY";
+
+/** Публичные настройки (wrangler.jsonc → vars). Не секреты: их можно отдавать в HTML. */
+export type PublicVarName = "TURNSTILE_SITE_KEY";
+
+export interface RateLimitRule {
+  /** Сколько запросов разрешено в окне. */
+  limit: number;
+  windowMs: number;
+}
+
+export interface RateLimitResult {
+  ok: boolean;
+  remaining: number;
+  /** Через сколько мс окно сбросится (для Retry-After). */
+  retryAfterMs: number;
+}
+
+export interface RateLimiter {
+  /** Засчитать одно обращение по ключу (например, «login:ip:1.2.3.4»). */
+  hit(key: string, rule: RateLimitRule): Promise<RateLimitResult>;
+}
 
 export interface StoredObjectInfo {
   key: string;
@@ -33,4 +54,7 @@ export interface Platform {
   media(bucket: MediaBucket): ObjectStorage | null;
   /** Секрет или undefined, если не задан. Никогда не отдаём его клиенту и не пишем в логи. */
   secret(name: SecretName): string | undefined;
+  /** Публичная настройка или undefined, если не задана. */
+  publicVar(name: PublicVarName): string | undefined;
+  rateLimiter: RateLimiter;
 }

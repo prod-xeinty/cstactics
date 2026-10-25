@@ -47,8 +47,9 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 
 ## Вход через Steam
 
-- `/api/auth/steam/login` → Steam → `/api/auth/steam/callback` → сессия в cookie `__Host-session` (в базе только SHA-256 токена), живёт 30 дней.
-- `/api/auth/me` — кто вошёл, `POST /api/auth/logout` — выход (только со своего сайта).
+- `/login` (капча Turnstile) → `POST /api/auth/steam/login` → Steam → `/api/auth/steam/callback` → сессия в cookie `__Host-session` (в базе только SHA-256 токена), живёт 30 дней.
+- `/api/auth/me` — кто вошёл, `POST /api/auth/logout` — выход (свой Origin + CSRF-токен).
+- Защита запросов (CSRF, лимиты на Durable Objects, Turnstile, заголовки) — [docs/security/app-security.md](docs/security/app-security.md).
 - Ответ Steam проверяем у самого Steam (`check_authentication`), плюс `return_to`, `claimed_id`, одноразовый `response_nonce`.
 - Ник и аватар: с секретом `STEAM_API_KEY` — через Steam Web API, без него — из публичного профиля.
 
@@ -57,6 +58,7 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 - `src/app/` — страницы и маршруты (Next App Router).
 - `src/platform/` — интерфейсы платформы (`Database`, `ObjectStorage`). Бизнес-логика ходит в базу и хранилище только через них; Cloudflare-биндинги трогает один файл `cloudflare.ts`.
 - `src/auth/`, `src/users/` — вход через Steam и сессии.
+- `src/security/` — CSRF, лимиты, Turnstile, защитные заголовки; `worker/index.ts` — точка входа воркера (заголовки + экспорт Durable Objects).
 - `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Сейчас там `users`, `sessions`, `openid_nonces`; остальное — #11.
 - `.claude/agents/` — агенты Claude Code: `security-reviewer` (ревью безопасности PR) и `tactic-checker` (проверка тактик по правилам контента). Только читают, вызываются сами или явно: «пусть security-reviewer посмотрит PR #N».
 - `tests/` — тесты; база в тестах — встроенный SQLite из Node с настоящими миграциями.
@@ -78,4 +80,4 @@ npm run deploy:vinext
 
 После деплоя открой `https://kollgg.<твой-поддомен>.workers.dev/api/health` — должно быть `{"ok":true,...}`.
 
-**R2 пока отключён**: для него нужна платёжная карта на аккаунте Cloudflare. Бакеты закомментированы в `wrangler.jsonc`, в `/api/health` они показываются как `skipped`. Когда дойдём до загрузки видео (#12): включить R2 в панели, создать бакеты `kollgg-media-private` и `kollgg-media-public`, раскомментировать `r2_buckets`, запустить `npm run cf-typegen`. Секреты на сервер — через `npx wrangler secret put ИМЯ`.
+**R2 пока отключён**: для него нужна платёжная карта на аккаунте Cloudflare. Бакеты закомментированы в `wrangler.jsonc`, в `/api/health` они показываются как `skipped`. Когда дойдём до загрузки видео (#12): включить R2 в панели, создать бакеты `kollgg-media-private` и `kollgg-media-public`, раскомментировать `r2_buckets`, запустить `npm run cf-typegen`. Секреты на сервер — через `npx wrangler secret put ИМЯ`. Durable Object для лимитов создаётся сам при деплое (миграция `v1` в `wrangler.jsonc`).

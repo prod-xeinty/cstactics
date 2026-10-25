@@ -16,6 +16,8 @@
 /docs/security/         @sK8le
 /src/auth/              @sK8le
 /src/platform/          @sK8le
+/src/security/          @sK8le
+/worker/                @sK8le
 /src/app/api/auth/      @sK8le
 /wrangler.jsonc         @sK8le
 /migrations/            @sK8le @prod-xeinty

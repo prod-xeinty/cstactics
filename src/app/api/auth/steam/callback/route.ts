@@ -14,6 +14,8 @@ import {
   STATE_COOKIE,
 } from "@/auth/session";
 import { upsertSteamUser } from "@/users/repository";
+import { clientIp } from "@/security/client-ip";
+import { enforceRateLimit } from "@/security/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -44,11 +46,14 @@ async function handleCallback(request: Request): Promise<Response> {
     return redirect("/?login=failed", [clearCookie(STATE_COOKIE)]);
   };
 
+  const platform = await getPlatform();
+  const limited = await enforceRateLimit(platform.rateLimiter, "loginCallback", clientIp(request));
+  if (limited) return limited;
+
   const cookieState = readCookie(cookieHeader, STATE_COOKIE);
   const queryState = url.searchParams.get("state");
   if (!cookieState || !queryState || !timingSafeEqual(cookieState, queryState)) return fail("bad_state");
 
-  const platform = await getPlatform();
   const now = new Date();
   const result = await verifySteamResponse(url.searchParams, {
     expectedReturnTo: `${origin}/api/auth/steam/callback?state=${cookieState}`,
