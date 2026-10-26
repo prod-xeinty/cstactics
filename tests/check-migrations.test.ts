@@ -31,6 +31,14 @@ describe("проверка миграций", () => {
   it("UPDATE в теле триггера ловится", () => {
     expect(findDestructive("CREATE TRIGGER t AFTER INSERT ON a BEGIN UPDATE b SET x = 1; END;")).toContain("UPDATE");
   });
+  it.each([
+    ["ALTER TABLE `users` RENAME TO `players`;", "переименование"],
+    ["ALTER TABLE `users` RENAME COLUMN `a` TO `b`;", "переименование"],
+    ['ALTER TABLE "users" DROP COLUMN "nickname";', "DROP"],
+    ["WITH s AS (SELECT 1) UPDATE users SET role = 'user';", "UPDATE"],
+  ])("формат drizzle-kit и CTE: %s", (sql, op) => {
+    expect(findDestructive(sql)).toContain(op);
+  });
   it("слова внутри строк не считаются", () => {
     expect(findDestructive("INSERT INTO t VALUES ('DROP TABLE users');")).toEqual([]);
   });

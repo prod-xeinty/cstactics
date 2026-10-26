@@ -11,7 +11,7 @@ export const DESTRUCTIVE = [
   [/\bALTER\s+TABLE\s+\S+\s+DROP\b/i, "удаление колонки"],
   [/\bDELETE\s+FROM\b/i, "DELETE"],
   // UPDATE как оператор (в начале, после «;» или BEGIN в триггере), а не «ON UPDATE» во внешнем ключе.
-  [/(^|;|\bBEGIN\b)\s*UPDATE\b/im, "UPDATE"],
+  [/(^|;|\bBEGIN\b|\))\s*UPDATE\b/im, "UPDATE"],
   [/\b(INSERT\s+OR\s+REPLACE|REPLACE\s+INTO)\b/i, "REPLACE"],
 ];
 
@@ -26,7 +26,9 @@ export function stripSql(sql) {
     if (c === "'" || c === '"' || c === "`") {
       const end = sql.indexOf(c, i + 1);
       i = end === -1 ? sql.length : end;
-      out += " ";
+      // Строка → пробел; имя в кавычках ("…", `…` — так пишет drizzle-kit) → заглушка, чтобы правила вида
+      // «ALTER TABLE <имя> RENAME» продолжали видеть имя.
+      out += c === "'" ? " " : "x";
     } else if (c === "-" && sql[i + 1] === "-") {
       const end = sql.indexOf("\n", i);
       i = end === -1 ? sql.length : end - 1;
