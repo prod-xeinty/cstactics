@@ -9,6 +9,7 @@
 | `CI` (`ci.yml`) | `npm ci` → типы → ESLint → тесты → сборка | любая проверка красная |
 | `Security` → gitleaks (`security.yml`) | ищет секреты во **всей** истории проверяемого коммита (не только в диффе PR) | найден ключ, токен, пароль |
 | `Security` → npm audit (`security.yml`) | уязвимости зависимостей через `scripts/audit.mjs` | critical в любых зависимостях или high в продовых без исключения |
+| `Security` → zizmor (`security.yml`) | линтер самих workflow: инъекции через `${{ }}` в `run:`, лишние права, опасные триггеры, незакреплённые экшены | любая находка (исключение — только `# zizmor: ignore[правило]` с причиной в комментарии) |
 | `CodeQL` (`codeql.yml`) | статический анализ TS/JS, набор `security-extended` | найдена уязвимость (результаты — Security → Code scanning) |
 | Dependabot (`dependabot.yml`) | раз в неделю PR с обновлениями npm и GitHub Actions | — |
 
@@ -18,7 +19,8 @@
 - Токен `GITHUB_TOKEN` — только чтение (`permissions: contents: read`), шире — точечно (CodeQL: `security-events: write`).
 - `actions/checkout` с `persist-credentials: false`: токен не остаётся в `.git` для следующих шагов.
 - Сторонние экшены закреплены по **SHA коммита**, а не по тегу (тег можно перевесить на вредный код). Dependabot сам обновляет SHA.
-- Бинарники, которые качаем руками (gitleaks), сверяем по sha256 из официального релиза.
+- Бинарники и пакеты, которые качаем руками (gitleaks, zizmor), сверяем по sha256.
+- Значения `${{ vars.* }}`, `${{ github.event.* }}` и т. п. в скрипт `run:` не подставляем — только через `env:` и `"$ПЕРЕМЕННАЯ"`.
 
 ## Ложные срабатывания gitleaks
 
@@ -52,6 +54,12 @@ gitleaks git --config .gitleaks.toml --redact .   # вся история
 gitleaks dir --config .gitleaks.toml --redact src # только файлы
 ```
 
+zizmor (`pip install zizmor==1.31.1`):
+
+```bash
+zizmor --offline .github/workflows
+```
+
 ## Что включить в настройках репозитория (нужен Admin — владелец репо)
 
 ### 1. Защита `main`
@@ -63,6 +71,7 @@ Settings → Rules → Rulesets → **New branch ruleset**:
   - `Проверки` (CI)
   - `Секреты (gitleaks)`
   - `Зависимости (npm audit)`
+  - `Workflow (zizmor)`
   - `CodeQL (TS/JS)`
 
   Проверки появятся в списке, когда хотя бы раз прогонятся.
