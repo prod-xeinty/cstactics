@@ -29,6 +29,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # для проверки миграций относительно базовой ветки
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -37,6 +38,14 @@ jobs:
 
       - name: Зависимости
         run: npm ci
+
+      # Автодеплой применяет миграции до кода — разрушающие только с меткой PR (docs/ops/deploy.md).
+      - name: Миграции только добавляющие
+        if: github.event_name == 'pull_request'
+        run: node scripts/check-migrations.mjs
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          ALLOW_DESTRUCTIVE_MIGRATION: ${{ contains(github.event.pull_request.labels.*.name, 'разрушающая миграция') && '1' || '' }}
 
       - name: Типы
         run: npm run typecheck
@@ -49,6 +58,22 @@ jobs:
 
       - name: Сборка
         run: npm run build:vinext
+
+      # Сквозные тесты в настоящем браузере против собранного воркера (локальная D1, рантайм Workers).
+      - name: Браузер для сквозных тестов
+        run: npx playwright install --with-deps chromium
+
+      - name: Сквозные тесты (Playwright)
+        run: npm run e2e
+
+      - name: Отчёт Playwright при падении
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
 
       # Вся цепочка бэкапа на локальной D1: выгрузка → проверка → шифрование → расшифровка → восстановление.
       - name: Бэкап — самопроверка

@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 .next/
 dist/
 .env
@@ -16,3 +16,7 @@ backup-out/
 next-env.d.ts
 *.tsbuildinfo
 worker-configuration.d.ts
+
+# Playwright
+test-results/
+playwright-report/

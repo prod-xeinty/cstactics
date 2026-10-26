@@ -24,7 +24,8 @@
     "audit:deps": "node scripts/audit.mjs",
     "backup:keygen": "node scripts/backup-keygen.mjs",
     "backup:decrypt": "node scripts/backup-decrypt.mjs",
-    "backup:selftest": "node scripts/backup-selftest.mjs"
+    "backup:selftest": "node scripts/backup-selftest.mjs",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@vinext/cloudflare": "1.2.0",
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.64.0",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

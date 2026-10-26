@@ -20,7 +20,7 @@ if (!CF_BACKUP_TOKEN || !CLOUDFLARE_ACCOUNT_ID || recipients.length === 0) {
     !CLOUDFLARE_ACCOUNT_ID && "секрет CLOUDFLARE_ACCOUNT_ID",
     recipients.length === 0 && "публичный ключ в security/backup-recipients.txt",
   ].filter(Boolean);
-  // После первичной настройки (переменная репозитория BACKUP_REQUIRED=1) пропавший ключ/секрет — это авария, а не «не настроено».
+  // Бэкап включён (BACKUP_ENABLED=1 → workflow передаёт BACKUP_REQUIRED=1): пропавший ключ/секрет — авария, а не «не настроено».
   const required = BACKUP_REQUIRED === "1";
   console.log(`::${required ? "error" : "warning"}::Бэкап не настроен, не хватает: ${missing.join("; ")} (docs/ops/backup-restore.md).`);
   summary(`Бэкап D1 **не настроен**, не хватает: ${missing.join("; ")}.`);

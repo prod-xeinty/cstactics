@@ -1,0 +1,141 @@
+# Автодеплой: после зелёного CI на пуше в main → миграции D1 → деплой воркера → проверка боевого сайта.
+# Включается переменной DEPLOY_ENABLED=1 — её админ ставит ПОСЛЕ настройки окружения «production»
+# (только ветка main, секреты CLOUDFLARE_API_TOKEN и CLOUDFLARE_ACCOUNT_ID). Подробно — docs/ops/deploy.md.
+name: Деплой
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Деплои строго по одному, без отмены начатого (иначе можно оборвать миграцию).
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  SITE_URL: https://kollgg.kollgg-probe-test.workers.dev
+  WRANGLER_SEND_METRICS: "false"
+
+jobs:
+  # Окружение GitHub создаёт сам при первом запуске job с environment — без правил по веткам.
+  # Поэтому, пока деплой явно не включён, до job с окружением дело не доходит.
+  gate:
+    name: Деплоить?
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    # Только после успешного CI на пуше в main этого репозитория — или вручную и только с main.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    permissions:
+      contents: read
+      actions: read # проверить, что прогон CI на коммите зелёный
+    outputs:
+      enabled: ${{ steps.decide.outputs.enabled }}
+      sha: ${{ steps.decide.outputs.sha }}
+    steps:
+      - id: decide
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ENABLED: ${{ vars.DEPLOY_ENABLED }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$ENABLED" != "1" ]; then
+            echo "::warning::Автодеплой выключен: нет переменной DEPLOY_ENABLED=1 (docs/ops/deploy.md)."
+            echo "Автодеплой **выключен**: переменная репозитория \`DEPLOY_ENABLED\` не равна 1." >> "$GITHUB_STEP_SUMMARY"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Деплоим только последний main: повторный запуск старого CI не должен откатить прод на старый код.
+          HEAD=$(gh api "repos/$REPO/git/ref/heads/main" --jq .object.sha)
+          if [ "$HEAD" != "$SHA" ]; then
+            echo "::error::Коммит $SHA — не последний main ($HEAD). Деплоится только свежий main."
+            exit 1
+          fi
+          # Зелёный ПРОГОН workflow CI на этом коммите (а не просто check run с таким именем — его можно создать через API).
+          CI=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&event=push&status=success" --jq .total_count)
+          if [ "$CI" = "0" ]; then
+            echo "::error::На коммите $SHA нет успешного прогона CI на пуше в main. Сначала CI."
+            exit 1
+          fi
+          echo "enabled=true" >> "$GITHUB_OUTPUT"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Деплой на Cloudflare
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ env.SITE_URL }}
+    steps:
+      - name: Секреты на месте?
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Деплой включён (DEPLOY_ENABLED=1), но в окружении production нет CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID."
+            exit 1
+          fi
+
+      # Ровно тот коммит, на котором прошёл CI.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+
+      # «Re-run failed jobs» берёт старые outputs gate — сверяем свежесть ещё раз прямо здесь (репо публичное, токен не нужен).
+      - name: Всё ещё последний main?
+        env:
+          SHA: ${{ needs.gate.outputs.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          HEAD=$(git ls-remote "https://github.com/$REPO" refs/heads/main | cut -f1)
+          if [ "$HEAD" != "$SHA" ]; then
+            echo "::error::$SHA — уже не последний main ($HEAD). Деплоится только свежий main."
+            exit 1
+          fi
+
+      # Установка и сборка — БЕЗ токена: сборочная цепочка (vite, плагины, их зависимости) его не видит.
+      - name: Зависимости и сборка
+        run: |
+          npm ci --ignore-scripts
+          npm run build:vinext
+
+      # Миграции до деплоя: новый код может рассчитывать на новые таблицы. Миграции — только добавляющие
+      # (в CI это проверяет scripts/check-migrations.mjs), тогда откат кода не требует отката базы.
+      - name: Миграции D1
+        run: npx wrangler d1 migrations apply DB --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Прямо wrangler, а не vinext-cloudflare: тот даже с --skip-build загружает vite.config и плагины при токене
+      # в окружении. В нашей настройке vinext-cloudflare и так вызывает ровно эту команду.
+      - name: Деплой
+        run: npx wrangler deploy --config dist/server/wrangler.json
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Проверка боевого сайта
+        run: node scripts/smoke-prod.mjs "$SITE_URL"

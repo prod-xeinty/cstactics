@@ -19,8 +19,30 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Окружение «backup» GitHub создаёт сам при первом запуске — без ограничения по веткам.
+  # Поэтому до явного включения (переменная BACKUP_ENABLED=1, её ставит админ ПОСЛЕ настройки окружения)
+  # задачу с окружением не запускаем вовсе.
+  gate:
+    name: Включено?
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        run: |
+          if [ "${{ vars.BACKUP_ENABLED }}" = "1" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Бэкап выключен: нет переменной BACKUP_ENABLED=1 (docs/ops/backup-restore.md, «Настройка»)."
+            echo "Бэкап D1 **выключен**: переменная репозитория \`BACKUP_ENABLED\` не равна 1." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   backup:
     name: Бэкап
+    needs: gate
+    if: needs.gate.outputs.enabled == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: backup
@@ -45,7 +67,8 @@ jobs:
         env:
           CF_BACKUP_TOKEN: ${{ secrets.CF_BACKUP_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          BACKUP_REQUIRED: ${{ vars.BACKUP_REQUIRED }}
+          # Включили — значит настроено: пропавший ключ/секрет дальше — красный прогон, а не «не настроено».
+          BACKUP_REQUIRED: "1"
 
       - name: Сохранить зашифрованный бэкап
         if: hashFiles('backup-out/*.age') != ''
