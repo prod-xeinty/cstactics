@@ -60,8 +60,25 @@ jobs:
         run: npm run build:vinext
 
       # Сквозные тесты в настоящем браузере против собранного воркера (локальная D1, рантайм Workers).
+      # Браузер Playwright кэшируем: качать его каждый раз долго, а однажды это заняло 12 из 15 минут лимита.
+      # Ключ — версия Playwright из package-lock.json: обновили Playwright → скачаем новый браузер.
+      - name: Версия Playwright
+        id: pw
+        run: echo "version=$(node -p 'require("./node_modules/@playwright/test/package.json").version')" >> "$GITHUB_OUTPUT"
+
+      - name: Кэш браузера Playwright
+        id: pw-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium
+
+      # Системные библиотеки (--with-deps, через apt) не ставим: на ubuntu-latest уже стоит Chrome со всеми зависимостями,
+      # а apt-зеркала — самое медленное место. Зависание обрывается через 5 минут и повторяется один раз.
       - name: Браузер для сквозных тестов
-        run: npx playwright install --with-deps chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        timeout-minutes: 8
+        run: timeout 300 npx playwright install chromium || timeout 300 npx playwright install chromium
 
       - name: Сквозные тесты (Playwright)
         run: npm run e2e
