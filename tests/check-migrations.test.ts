@@ -15,6 +15,25 @@ describe("проверка миграций", () => {
   ])("разрушающая: %s", (sql, op) => {
     expect(findDestructive(sql)).toContain(op);
   });
+  it.each([
+    ["INSERT INTO t VALUES ('--'); DROP TABLE x;", "DROP"],
+    ["DROP/**/TABLE x;", "DROP"],
+    ["UPDATE OR REPLACE t SET a = 1;", "UPDATE"],
+    ["UPDATE t AS a SET b = 1;", "UPDATE"],
+    ["INSERT OR REPLACE INTO t VALUES (1);", "REPLACE"],
+    ["REPLACE INTO t VALUES (1);", "REPLACE"],
+  ])("обход эвристики не проходит: %s", (sql, op) => {
+    expect(findDestructive(sql)).toContain(op);
+  });
+  it("ON UPDATE / ON DELETE во внешнем ключе — не разрушающие", () => {
+    expect(findDestructive("CREATE TABLE s (u text REFERENCES users(id) ON UPDATE no action ON DELETE cascade);")).toEqual([]);
+  });
+  it("UPDATE в теле триггера ловится", () => {
+    expect(findDestructive("CREATE TRIGGER t AFTER INSERT ON a BEGIN UPDATE b SET x = 1; END;")).toContain("UPDATE");
+  });
+  it("слова внутри строк не считаются", () => {
+    expect(findDestructive("INSERT INTO t VALUES ('DROP TABLE users');")).toEqual([]);
+  });
   it("комментарии не считаются", () => {
     expect(findDestructive("-- DROP TABLE users — так не делаем\nCREATE TABLE x (id text);")).toEqual([]);
   });

@@ -6,7 +6,7 @@ Workflow **«Деплой»** (`.github/workflows/deploy.yml`):
 
 1. срабатывает, когда **CI зелёный на пуше в `main`** (то есть после мержа PR), — или вручную **с ветки `main`**: Actions → «Деплой» → Run workflow;
 2. деплоит **только последний `main`** и только если на нём зелёная проверка CI: повторный запуск старого CI не откатит прод на старый код;
-3. `npm ci --ignore-scripts` → `build:vinext` (**без токена**) → **миграции D1** → **деплой** собранного (`vinext-cloudflare deploy --skip-build`; Durable Object создаётся/обновляется сам);
+3. `npm ci --ignore-scripts` → `build:vinext` (**без токена**) → **миграции D1** → **деплой** собранного прямо через `wrangler deploy --config dist/server/wrangler.json` (Durable Object создаётся/обновляется сам). Токен видят только шаги миграций и деплоя и только wrangler: `vinext-cloudflare deploy` даже с `--skip-build` загружал бы конфиг сборки и плагины при токене в окружении;
 4. **смоук боевого сайта** (`scripts/smoke-prod.mjs`): `/api/health` ok (база, лимитер), `X-Request-Id`, CSP, `/` и `/login` отвечают 200. Не прошёл — прогон красный, GitHub пришлёт письмо.
 
 Деплои идут строго по одному. Окружение GitHub — `production` (там видна история деплоев и ссылка на сайт).

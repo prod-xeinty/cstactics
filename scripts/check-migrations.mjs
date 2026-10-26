@@ -10,12 +10,39 @@ export const DESTRUCTIVE = [
   [/\bALTER\s+TABLE\s+\S+\s+RENAME\b/i, "переименование"],
   [/\bALTER\s+TABLE\s+\S+\s+DROP\b/i, "удаление колонки"],
   [/\bDELETE\s+FROM\b/i, "DELETE"],
-  [/\bUPDATE\s+\S+\s+SET\b/i, "UPDATE"],
+  // UPDATE как оператор (в начале, после «;» или BEGIN в триггере), а не «ON UPDATE» во внешнем ключе.
+  [/(^|;|\bBEGIN\b)\s*UPDATE\b/im, "UPDATE"],
+  [/\b(INSERT\s+OR\s+REPLACE|REPLACE\s+INTO)\b/i, "REPLACE"],
 ];
 
-/** Найти разрушающие операции в тексте миграции (комментарии -- … не считаем). */
+/**
+ * Убрать из SQL строковые литералы и комментарии (-- и блочные), сохранив границы слов.
+ * Это защита от ошибок, а не от злоумышленника: основной барьер — ревью Code Owners.
+ */
+export function stripSql(sql) {
+  let out = "";
+  for (let i = 0; i < sql.length; i++) {
+    const c = sql[i];
+    if (c === "'" || c === '"' || c === "`") {
+      const end = sql.indexOf(c, i + 1);
+      i = end === -1 ? sql.length : end;
+      out += " ";
+    } else if (c === "-" && sql[i + 1] === "-") {
+      const end = sql.indexOf("\n", i);
+      i = end === -1 ? sql.length : end - 1;
+      out += " ";
+    } else if (c === "/" && sql[i + 1] === "*") {
+      const end = sql.indexOf("*/", i + 2);
+      i = end === -1 ? sql.length : end + 1;
+      out += " ";
+    } else out += c;
+  }
+  return out;
+}
+
+/** Найти разрушающие операции в тексте миграции. */
 export function findDestructive(sql) {
-  const code = sql.replace(/--[^\n]*/g, "");
+  const code = stripSql(sql);
   return DESTRUCTIVE.filter(([re]) => re.test(code)).map(([, name]) => name);
 }
 
@@ -23,7 +50,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const base = process.env.BASE_REF ? `origin/${process.env.BASE_REF}` : "origin/main";
   let files = [];
   try {
-    files = execFileSync("git", ["diff", "--name-only", "--diff-filter=AM", `${base}...HEAD`, "--", "migrations/*.sql"], {
+    // --no-renames: переименованный файл миграции — это новая миграция для wrangler, проверяем её как новую.
+    files = execFileSync("git", ["diff", "--name-only", "--no-renames", "--diff-filter=AM", `${base}...HEAD`, "--", "migrations/*.sql"], {
       encoding: "utf8",
     })
       .split("\n")

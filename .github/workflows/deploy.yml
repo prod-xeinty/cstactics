@@ -39,7 +39,7 @@ jobs:
        github.event.workflow_run.head_repository.full_name == github.repository)
     permissions:
       contents: read
-      checks: read # проверить, что CI на коммите зелёный
+      actions: read # проверить, что прогон CI на коммите зелёный
     outputs:
       enabled: ${{ steps.decide.outputs.enabled }}
       sha: ${{ steps.decide.outputs.sha }}
@@ -63,10 +63,10 @@ jobs:
             echo "::error::Коммит $SHA — не последний main ($HEAD). Деплоится только свежий main."
             exit 1
           fi
-          # CI на этом коммите зелёный (для ручного запуска это не гарантировано событием).
-          CI=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=%D0%9F%D1%80%D0%BE%D0%B2%D0%B5%D1%80%D0%BA%D0%B8" --jq '[.check_runs[] | select(.conclusion == "success")] | length')
+          # Зелёный ПРОГОН workflow CI на этом коммите (а не просто check run с таким именем — его можно создать через API).
+          CI=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&event=push&status=success" --jq .total_count)
           if [ "$CI" = "0" ]; then
-            echo "::error::На коммите $SHA нет зелёной проверки «Проверки» (CI). Сначала CI."
+            echo "::error::На коммите $SHA нет успешного прогона CI на пуше в main. Сначала CI."
             exit 1
           fi
           echo "enabled=true" >> "$GITHUB_OUTPUT"
@@ -103,6 +103,18 @@ jobs:
           node-version: 22
           cache: npm
 
+      # «Re-run failed jobs» берёт старые outputs gate — сверяем свежесть ещё раз прямо здесь (репо публичное, токен не нужен).
+      - name: Всё ещё последний main?
+        env:
+          SHA: ${{ needs.gate.outputs.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          HEAD=$(git ls-remote "https://github.com/$REPO" refs/heads/main | cut -f1)
+          if [ "$HEAD" != "$SHA" ]; then
+            echo "::error::$SHA — уже не последний main ($HEAD). Деплоится только свежий main."
+            exit 1
+          fi
+
       # Установка и сборка — БЕЗ токена: сборочная цепочка (vite, плагины, их зависимости) его не видит.
       - name: Зависимости и сборка
         run: |
@@ -117,9 +129,10 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-      # --skip-build: деплоим то, что собрано выше без токена (иначе vinext пересобрал бы проект с токеном в окружении).
+      # Прямо wrangler, а не vinext-cloudflare: тот даже с --skip-build загружает vite.config и плагины при токене
+      # в окружении. В нашей настройке vinext-cloudflare и так вызывает ровно эту команду.
       - name: Деплой
-        run: npx vinext-cloudflare deploy --skip-build --config dist/server/wrangler.json
+        run: npx wrangler deploy --config dist/server/wrangler.json
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
