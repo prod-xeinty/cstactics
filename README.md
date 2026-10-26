@@ -28,6 +28,7 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 | `npm run cf-typegen` | Перегенерировать типы биндингов `worker-configuration.d.ts` (в git не лежит, создаётся при `npm install`; запускай после правок `wrangler.jsonc`) |
 | `npm run check` | Все проверки разом, как в CI |
 | `npm run lint` | Линтер (ESLint) |
+| `npm run e2e` | Сквозные тесты в браузере (Playwright) против собранного воркера; нужна сборка `build:vinext` |
 | `npm test` | Тесты (Vitest) |
 | `npm run db:generate` | Сгенерировать SQL-миграцию из `src/db/schema.ts` |
 | `npm run db:migrate:local` | Применить SQL-миграции из `migrations/` к локальной D1 |
@@ -67,6 +68,7 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 - `src/security/` — CSRF, лимиты, Turnstile, защитные заголовки; `worker/index.ts` — точка входа воркера (заголовки + экспорт Durable Objects).
 - `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Сейчас там `users`, `sessions`, `openid_nonces`; остальное — #11.
 - `.claude/agents/` — агенты Claude Code: `security-reviewer` (ревью безопасности PR) и `tactic-checker` (проверка тактик по правилам контента). Только читают, вызываются сами или явно: «пусть security-reviewer посмотрит PR #N».
+- `e2e/` — сквозные тесты в браузере (Playwright): главная, вход через Steam (без похода в Steam), заголовки, лимиты, CSRF, вёрстка на телефоне;
 - `tests/` — тесты; база в тестах — встроенный SQLite из Node с настоящими миграциями.
 
 ## Пробный деплой на Cloudflare
