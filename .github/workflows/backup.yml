@@ -30,8 +30,11 @@ jobs:
       enabled: ${{ steps.check.outputs.enabled }}
     steps:
       - id: check
+        # Значение — через env, а не подстановкой ${{ }} прямо в скрипт: так его нельзя исполнить как код.
+        env:
+          BACKUP_ENABLED: ${{ vars.BACKUP_ENABLED }}
         run: |
-          if [ "${{ vars.BACKUP_ENABLED }}" = "1" ]; then
+          if [ "$BACKUP_ENABLED" = "1" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"

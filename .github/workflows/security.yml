@@ -58,3 +58,38 @@ jobs:
       # npm audit читает только package-lock.json, ставить зависимости не нужно.
       - name: critical — нигде, high — в продовых; исключения из security/audit-allowlist.json
         run: node scripts/audit.mjs
+
+  zizmor:
+    name: Workflow (zizmor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ZIZMOR_VERSION: 1.31.1
+      # sha256 колеса zizmor-1.31.1-py3-none-manylinux_2_28_x86_64.whl с PyPI
+      ZIZMOR_SHA256: 58e878eb2dbd2c6183c105e1ac28c14f7dd1eca44a783f1fe2a69647d012c410
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Ставим строго эту версию и только с совпадающим хешем — подменённый пакет не встанет.
+      # В отдельный venv: системный Python раннера может запрещать pip install (PEP 668).
+      - name: Установить zizmor
+        run: |
+          echo "zizmor==${ZIZMOR_VERSION} --hash=sha256:${ZIZMOR_SHA256}" > "$RUNNER_TEMP/zizmor-req.txt"
+          python3 -m venv "$RUNNER_TEMP/zizmor"
+          "$RUNNER_TEMP/zizmor/bin/pip" install --no-deps --require-hashes -r "$RUNNER_TEMP/zizmor-req.txt"
+
+      # Ищем в наших workflow инъекции через ${{ }}, лишние права, опасные триггеры, незакреплённые экшены.
+      # На PR — офлайн (только сами файлы). На main и по расписанию — ещё и онлайн-проверки через API GitHub:
+      # SHA экшена из чужого форка (impostor-commit), экшены с известными уязвимостями.
+      - name: Проверить .github/workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            "$RUNNER_TEMP/zizmor/bin/zizmor" --offline --format=github .github/workflows
+          else
+            "$RUNNER_TEMP/zizmor/bin/zizmor" --format=github .github/workflows
+          fi
