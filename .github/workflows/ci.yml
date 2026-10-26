@@ -50,6 +50,22 @@ jobs:
       - name: Сборка
         run: npm run build:vinext
 
+      # Сквозные тесты в настоящем браузере против собранного воркера (локальная D1, рантайм Workers).
+      - name: Браузер для сквозных тестов
+        run: npx playwright install --with-deps chromium
+
+      - name: Сквозные тесты (Playwright)
+        run: npm run e2e
+
+      - name: Отчёт Playwright при падении
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
       # Вся цепочка бэкапа на локальной D1: выгрузка → проверка → шифрование → расшифровка → восстановление.
       - name: Бэкап — самопроверка
         run: npm run backup:selftest
