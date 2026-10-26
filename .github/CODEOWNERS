@@ -20,6 +20,7 @@
 /scripts/usage-*        @sK8le
 /scripts/backup-*       @sK8le
 /scripts/smoke-*        @sK8le
+/scripts/check-*        @sK8le
 /src/auth/              @sK8le
 /src/platform/          @sK8le
 /src/security/          @sK8le
