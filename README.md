@@ -32,6 +32,7 @@ npm run dev:vinext      # http://localhost:3001 — Workers-рантайм, ло
 | `npm test` | Тесты (Vitest) |
 | `npm run db:generate` | Сгенерировать SQL-миграцию из `src/db/schema.ts` |
 | `npm run db:migrate:local` | Применить SQL-миграции из `migrations/` к локальной D1 |
+| `npm run db:seed:local` | Добавить демо-тактики и клатчи в локальную D1 после миграций, повторный запуск безопасен. Данные черновые и не опубликованы |
 | `npm run backup:selftest` | Проверить всю цепочку бэкапа на локальной D1 |
 | `npm run backup:keygen` / `backup:decrypt` | Ключ для бэкапов / расшифровать бэкап (см. docs/ops/backup-restore.md) |
 | `npm run db:migrate:remote` | Применить миграции к боевой D1 (перед деплоем, если появились новые) |
