@@ -13,6 +13,8 @@ export const RATE_LIMITS = {
   faceitProfile: { limit: 12, windowMs: 60 * 60_000 },
   /** Создание и изменение голосов: на игрока. */
   vote: { limit: 20, windowMs: 60 * 60_000 },
+  /** Отправка тактики на модерацию: на игрока. */
+  tacticSubmit: { limit: 5, windowMs: 60 * 60_000 },
   /** Добавление версии игры: на модератора и IP. */
   patch: { limit: 10, windowMs: 60_000 },
 } as const satisfies Record<string, RateLimitRule>;
