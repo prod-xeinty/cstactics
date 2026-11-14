@@ -23,8 +23,10 @@ test.describe("главная и вход", () => {
     const errors = collectErrors(page);
     const res = await page.goto("/");
     expect(res?.status()).toBe(200);
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText("КОЛЛ.GG");
-    await expect(page.getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Сплит A: лонг + кат");
+    await expect(page.getByRole("banner").getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
+    await page.getByRole("button", { name: "Следующая тактика" }).click();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Раш Б через туннели");
     expect(errors).toEqual([]);
   });
 
