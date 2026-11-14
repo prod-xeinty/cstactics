@@ -7,7 +7,7 @@ const bands: CatalogBand[] = ["low", "mid", "high"];
 
 export async function listPersonalized(db: Database): Promise<PersonalTactic[]> {
   const rows = await db.all<{ id: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number }>(
-    "SELECT id, content, side, team_size, economy, difficulty FROM tactics WHERE map = 'dust2' AND status = 'published' ORDER BY created_at DESC, id LIMIT 100",
+    "SELECT id, content, side, team_size, economy, difficulty FROM tactics WHERE map = 'dust2' AND status = 'published' ORDER BY created_at DESC, id",
   );
   const stats = await db.all<{ tactic_id: string; band: CatalogBand; vote_count: number; works_sum: number; easy_sum: number }>(
     "SELECT rs.tactic_id, rs.band, rs.vote_count, rs.works_sum, rs.easy_sum FROM rating_stats rs JOIN tactics t ON t.id = rs.tactic_id WHERE t.map = 'dust2' AND t.status = 'published' AND rs.band IN ('low','mid','high')",
@@ -17,7 +17,7 @@ export async function listPersonalized(db: Database): Promise<PersonalTactic[]> 
   for (const stat of stats) {
     const item = scores.get(stat.tactic_id);
     if (!item || !bands.includes(stat.band)) continue;
-    item[stat.band] = { votes: stat.vote_count, works: stat.vote_count >= 5 ? Math.round(stat.works_sum / stat.vote_count * 10) / 10 : null, easy: stat.vote_count >= 5 ? Math.round(stat.easy_sum / stat.vote_count * 10) / 10 : null };
+    item[stat.band] = { votes: stat.vote_count, works: stat.vote_count >= 5 ? stat.works_sum / stat.vote_count : null, easy: stat.vote_count >= 5 ? stat.easy_sum / stat.vote_count : null };
   }
   return rows.flatMap((row) => {
     let content: unknown;
