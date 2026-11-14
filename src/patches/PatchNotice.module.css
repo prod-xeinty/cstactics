@@ -1,0 +1,24 @@
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #fbf8f0;
+  color: #17243a;
+  border-bottom: 2px solid #9a5a20;
+}
+
+.notice p {
+  margin: 0;
+}
+
+.notice button {
+  flex: 0 0 44px;
+  min-height: 44px;
+  border: 1px solid #17243a;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 24px;
+}

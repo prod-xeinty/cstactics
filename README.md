@@ -61,13 +61,17 @@ Workflow — `.github/workflows/ci.yml`. Если проверка красна�
 - Ответ Steam проверяем у самого Steam (`check_authentication`), плюс `return_to`, `claimed_id`, одноразовый `response_nonce`.
 - Ник и аватар: с секретом `STEAM_API_KEY` — через Steam Web API, без него — из публичного профиля.
 
+## Обновы CS2
+
+Модератор или админ после входа добавляет версию и дату обновы через форму на главной. Публичный `GET /api/patches` отдаёт последний патч. Плашка на главной скрывается до следующей версии после нажатия на крестик. Для тактик статус проверки вычисляется через `tacticPatchStatus` по `game_version` и последнему патчу.
+
 ## Куда что класть
 
 - `src/app/` — страницы и маршруты (Next App Router).
 - `src/platform/` — интерфейсы платформы (`Database`, `ObjectStorage`). Бизнес-логика ходит в базу и хранилище только через них; Cloudflare-биндинги трогает один файл `cloudflare.ts`.
 - `src/auth/`, `src/users/` — вход через Steam и сессии.
 - `src/security/` — CSRF, лимиты, Turnstile, защитные заголовки; `worker/index.ts` — точка входа воркера (заголовки + экспорт Durable Objects).
-- `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции. Сейчас там `users`, `sessions`, `openid_nonces`; остальное — #11.
+- `src/db/schema.ts` и `migrations/` — схема D1 (Drizzle) и SQL-миграции.
 - `.claude/agents/` — агенты Claude Code: `security-reviewer` (ревью безопасности PR) и `tactic-checker` (проверка тактик по правилам контента). Только читают, вызываются сами или явно: «пусть security-reviewer посмотрит PR #N».
 - `e2e/` — сквозные тесты в браузере (Playwright): главная, вход через Steam (без похода в Steam), заголовки, лимиты, CSRF, вёрстка на телефоне;
 - `tests/` — тесты; база в тестах — встроенный SQLite из Node с настоящими миграциями.
