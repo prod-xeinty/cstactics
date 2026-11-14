@@ -24,7 +24,7 @@ test.describe("главная и вход", () => {
     const res = await page.goto("/");
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("КОЛЛ.GG");
-    await expect(page.getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
+    await expect(page.getByRole("banner").getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
     expect(errors).toEqual([]);
   });
 
