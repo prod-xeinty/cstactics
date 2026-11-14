@@ -1,7 +1,7 @@
 {
   // Конфиг Cloudflare Workers. Секреты сюда НЕ кладём — только `wrangler secret put`.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kollgg",
+  "name": "cstactics",
   "main": "./worker/index.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],

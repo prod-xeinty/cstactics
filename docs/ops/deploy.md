@@ -16,7 +16,7 @@ Workflow **«Деплой»** (`.github/workflows/deploy.yml`):
 Известное ограничение: сразу после деплоя смоук может попасть в старую версию воркера (обе отвечают одинаково) — тогда он подтверждает старую. Для MVP приемлемо; позже — номер версии в `/api/health`.
 
 ### Настройка (один раз)
-1. **sK8le:** https://dash.cloudflare.com/profile/api-tokens → Create Token → **Custom token** (не шаблон «Edit Cloudflare Workers» — он даёт лишнее: R2, KV, логи, маршруты зон):
+1. **Владелец аккаунта Cloudflare `xeinty`:** https://dash.cloudflare.com/profile/api-tokens → Create Token → **Custom token** (не шаблон «Edit Cloudflare Workers» — он даёт лишнее: R2, KV, логи, маршруты зон):
    - **Account → Workers Scripts → Edit** (деплой воркера и Durable Objects);
    - **Account → D1 → Edit** (миграции);
    - **Account → Account Settings → Read** (если без него wrangler ругается);
@@ -52,5 +52,5 @@ npm install
 npm run db:migrate:remote
 npm run build:vinext
 npm run deploy:vinext
-node scripts/smoke-prod.mjs https://kollgg.kollgg-probe-test.workers.dev
+node scripts/smoke-prod.mjs https://cstactics.xeinty.workers.dev
 ```

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Проверка боевого сайта после деплоя: health, защитные заголовки, страницы.
-// node scripts/smoke-prod.mjs https://kollgg.kollgg-probe-test.workers.dev
+// node scripts/smoke-prod.mjs https://cstactics.xeinty.workers.dev
 const base = (process.argv[2] ?? process.env.SITE_URL ?? "").replace(/\/$/, "");
 // http — только для проверки самого скрипта на локальном воркере (SMOKE_ALLOW_HTTP=1).
 if (!base.startsWith("https://") && !(process.env.SMOKE_ALLOW_HTTP === "1" && base.startsWith("http://127.0.0.1"))) {
