@@ -10,7 +10,7 @@
       "binding": "DB",
       "database_name": "kollgg",
       // id базы из `wrangler d1 create kollgg` (не секрет).
-      "database_id": "5f401665-fdd7-4199-99d1-5aa8c113203d",
+      "database_id": "e625e6d3-eabe-4826-982a-7b4c3aef4b1e",
       "migrations_dir": "migrations"
     }
   ],
