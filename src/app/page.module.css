@@ -1,33 +1,50 @@
-.patchForm {
-  display: grid;
-  gap: 12px;
-  max-width: 420px;
-  margin: 32px 0;
-  padding: 16px;
-  border: 1px solid #c9c3b7;
-  background: #fbf8f0;
-  color: #17243a;
-}
-
-.patchForm h2 {
-  margin: 0;
-}
-
-.patchForm label {
-  display: grid;
-  gap: 4px;
-}
-
-.patchForm input,
-.patchForm button {
-  min-height: 44px;
-  padding: 8px 12px;
-  font: inherit;
-}
-
-.patchForm button {
-  background: #e8b84b;
-  color: #17243a;
-  border: 1px solid #17243a;
-  cursor: pointer;
-}
+.container { max-width: 1440px; margin: 0 auto; padding: 36px 40px 80px; }
+.loginError { max-width: 1360px; margin: 20px auto 0; padding: 12px 40px; color: var(--danger); font-weight: 600; }
+.eyebrow, .overline, .quickLabel, .counter { margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 13px; }
+.eyebrow { color: var(--route); }
+.featured { min-height: 560px; border: 1px solid var(--rule); background: var(--paper-raised); display: flex; flex-direction: column; box-shadow: 8px 8px 0 rgba(23,36,58,.06); }
+.featuredTop { display: flex; justify-content: space-between; gap: 16px; padding: 20px 28px; border-bottom: 1px solid var(--rule); }
+.counter { color: var(--ink-muted); }
+.featuredBody { flex: 1; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); }
+.featuredMain { padding: 46px 42px 36px; display: flex; flex-direction: column; }
+.overline { color: var(--ink-muted); }
+.featured h1 { max-width: 850px; margin: 18px 0 20px; font: 700 clamp(56px, 7vw, 110px)/.96 var(--font-display); text-transform: uppercase; letter-spacing: -.045em; overflow-wrap: anywhere; }
+.call { max-width: 620px; margin: 0 0 30px; font-size: clamp(20px, 2.1vw, 28px); font-weight: 600; line-height: 1.3; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tags span { border: 1px solid var(--rule); padding: 5px 10px; text-transform: uppercase; font-size: 13px; font-weight: 700; }
+.demoNote { margin: auto 0 0; padding-top: 28px; color: var(--warning); font-size: 14px; font-weight: 600; }
+.quickBlock { border-left: 1px solid var(--rule); padding: 48px 36px; display: flex; flex-direction: column; background: #f4f0e7; }
+.quickLabel { color: var(--route); }
+.quickBlock ol { margin: 22px 0 0; padding: 0; list-style: none; counter-reset: step; }
+.quickBlock li { position: relative; min-height: 78px; padding: 0 0 20px 54px; font-size: 18px; line-height: 1.3; counter-increment: step; }
+.quickBlock li::before { content: counter(step, decimal-leading-zero); position: absolute; left: 0; top: -5px; color: var(--route); font: 600 32px/1 var(--font-display); }
+.ratingNote { margin: auto 0 0; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--ink-muted); font-size: 14px; }
+.ratingNote p { margin: 0 0 8px; color: var(--ink); font-weight: 700; }
+.ratingNote div { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+.ratingNote div span { border: 1px solid var(--rule); padding: 8px 4px; text-align: center; font-weight: 700; }
+.carouselControls { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--rule); padding: 12px 28px; }
+.dots, .arrows { display: flex; align-items: center; gap: 8px; }
+.dots button { width: 44px; height: 44px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+.dots button::after { content: ""; width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--ink); }
+.dots .activeDot::after { background: var(--route); border-color: var(--route); }
+.arrows button { width: 48px; height: 44px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font-size: 26px; cursor: pointer; }
+.arrows button:hover { background: var(--ink); color: var(--paper-raised); }
+.more { display: grid; grid-template-columns: minmax(240px, .35fr) minmax(0, 1fr); gap: 64px; padding: 86px 0 72px; }
+.sectionIntro h2, .explainer h2 { margin: 12px 0 16px; font: 700 clamp(36px, 4vw, 58px)/1.05 var(--font-display); text-transform: uppercase; }
+.sectionIntro > p:last-child { color: var(--ink-muted); max-width: 350px; }
+.tacticList { border-top: 2px solid var(--ink); }
+.tacticRow { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--rule); }
+.rowNumber { font: 600 28px/1 var(--font-display); color: var(--route); }
+.tacticRow h3 { margin: 0; font: 600 25px/1.15 var(--font-display); text-transform: uppercase; }
+.tacticRow p { margin: 6px 0 0; color: var(--ink-muted); }
+.rowMeta { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.explainer { border-top: 2px solid var(--ink); padding: 54px 0 80px; }
+.explainer h2 { max-width: 700px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 38px; }
+.steps p { display: flex; flex-direction: column; gap: 10px; margin: 0; padding-top: 16px; border-top: 1px solid var(--rule); }
+.steps b { font: 600 22px var(--font-display); text-transform: uppercase; }
+.steps span { color: var(--ink-muted); }
+.patchForm { display: grid; gap: 12px; max-width: 420px; margin: 32px 0; padding: 16px; border: 1px solid var(--rule); background: var(--paper-raised); }
+.patchForm h2 { margin: 0; }.patchForm label { display: grid; gap: 4px; }.patchForm input, .patchForm button { min-height: 44px; padding: 8px 12px; }.patchForm button { background: var(--highlight); color: var(--ink); border: 1px solid var(--ink); cursor: pointer; }
+@media (max-width: 900px) { .featuredBody { grid-template-columns: 1fr; }.quickBlock { border-left: 0; border-top: 1px solid var(--rule); }.more { grid-template-columns: 1fr; gap: 22px; } }
+@media (max-width: 600px) { .container { padding: 16px 16px 48px; }.featured { min-height: 0; }.featuredTop { padding: 16px; }.featuredMain { padding: 32px 20px; }.featured h1 { font-size: clamp(48px, 14vw, 72px); }.call { font-size: 20px; }.quickBlock { padding: 28px 20px; }.quickBlock li { font-size: 16px; min-height: 70px; }.carouselControls { padding: 8px 12px; }.more { padding: 56px 0; }.tacticRow { grid-template-columns: 38px 1fr; gap: 12px; }.rowMeta { grid-column: 2; }.steps { grid-template-columns: 1fr; gap: 18px; }.explainer { padding: 42px 0; } }
