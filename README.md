@@ -95,6 +95,6 @@ npm run build:vinext
 npm run deploy:vinext
 ```
 
-После деплоя открой `https://kollgg.<твой-поддомен>.workers.dev/api/health` — должно быть `{"ok":true,...}`.
+После деплоя открой `https://cstactics.xeinty.workers.dev/api/health` — должно быть `{"ok":true,...}`.
 
 **R2 пока отключён**: для него нужна платёжная карта на аккаунте Cloudflare. Бакеты закомментированы в `wrangler.jsonc`, в `/api/health` они показываются как `skipped`. Когда дойдём до загрузки видео (#12): включить R2 в панели, создать бакеты `kollgg-media-private` и `kollgg-media-public`, раскомментировать `r2_buckets`, запустить `npm run cf-typegen`. Секреты на сервер — через `npx wrangler secret put ИМЯ`. Durable Object для лимитов создаётся сам при деплое (миграция `v1` в `wrangler.jsonc`).
