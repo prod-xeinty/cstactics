@@ -1,0 +1,30 @@
+.shell { min-height: 100vh; display: flex; flex-direction: column; }
+.header { border-bottom: 1px solid var(--rule); background: var(--paper-raised); }
+.headerInner, .footerInner { max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+.headerInner { min-height: 76px; display: flex; align-items: center; gap: 48px; }
+.logo { flex: none; font: 700 34px/1 var(--font-display); letter-spacing: -.045em; text-decoration: none; white-space: nowrap; }
+.logo span { color: var(--route); }
+.nav { display: flex; align-items: center; gap: 24px; }
+.nav a { min-height: 44px; display: inline-flex; align-items: center; border-bottom: 3px solid transparent; padding-top: 3px; font-weight: 600; text-decoration: none; }
+.nav a:hover, .nav a:focus-visible { border-bottom-color: var(--route); }
+.headerAction { margin-left: auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 8px 18px; border: 1px solid var(--ink); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.headerAction:hover { background: var(--ink); color: var(--paper-raised); }
+.account { margin-left: auto; display: flex; align-items: center; gap: 16px; min-width: 0; }
+.account form { flex: none; }
+.account button { background: transparent; cursor: pointer; }
+.nickname { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.content { width: 100%; flex: 1; }
+.footer { border-top: 1px solid var(--rule); }
+.footerInner { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 16px; color: var(--ink-muted); font-size: 14px; }
+.footer p { margin: 0; }
+@media (max-width: 700px) {
+  .headerInner, .footerInner { padding: 0 16px; }
+  .headerInner { min-height: 72px; flex-wrap: wrap; gap: 0 16px; padding-top: 12px; padding-bottom: 8px; }
+  .logo { font-size: 28px; }
+  .nav { order: 3; width: 100%; gap: 20px; }
+  .nav a { font-size: 14px; }
+  .headerAction { padding: 8px 12px; font-size: 13px; }
+  .account { gap: 8px; }
+  .nickname { max-width: 100px; font-size: 13px; }
+  .footerInner { align-items: flex-start; flex-direction: column; justify-content: center; padding-top: 16px; padding-bottom: 16px; }
+}
