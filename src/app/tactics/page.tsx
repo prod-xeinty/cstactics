@@ -1,6 +1,6 @@
 import { getPlatform, type Database } from "@/platform";
 import { demoTactics } from "@/app/home-data";
-import { listCatalog, parseCatalogFilters, type CatalogTactic } from "@/tactics/catalog";
+import { hasPublishedTactics, listCatalog, parseCatalogFilters, type CatalogTactic } from "@/tactics/catalog";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -9,13 +9,16 @@ const economyNames: Record<string, string> = { eco: "Эко", force: "Форс",
 export default async function TacticsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const filters = parseCatalogFilters(await searchParams);
   let published: CatalogTactic[] = [];
+  let hasPublished = false;
   let unavailable = false;
   let db: Database | null = null;
   try { db = (await getPlatform()).db; } catch { /* next dev без D1: показываем черновики */ }
   if (db) {
-    try { published = await listCatalog(db, filters); } catch { unavailable = true; }
+    try {
+      [hasPublished, published] = await Promise.all([hasPublishedTactics(db), listCatalog(db, filters)]);
+    } catch { unavailable = true; }
   }
-  const showDemo = published.length === 0 && !unavailable;
+  const showDemo = !hasPublished && !unavailable;
   const demo = showDemo ? demoTactics.filter((t) =>
     (filters.side === "all" || t.side === filters.side) && (filters.team === "all" || t.teamSize === Number(filters.team)),
   ) : [];

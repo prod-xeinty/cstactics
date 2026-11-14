@@ -27,6 +27,10 @@ export function parseCatalogFilters(params: Record<string, string | string[] | u
 
 interface Row { id: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; vote_count: number | null; works_sum: number | null; easy_sum: number | null }
 
+export async function hasPublishedTactics(db: Database): Promise<boolean> {
+  return !!(await db.first("SELECT id FROM tactics WHERE map = 'dust2' AND status = 'published' LIMIT 1"));
+}
+
 export async function listCatalog(db: Database, filters: CatalogFilters): Promise<CatalogTactic[]> {
   const rows = await db.all<Row>(
     `SELECT t.id, t.content, t.side, t.team_size, t.economy, t.difficulty,
