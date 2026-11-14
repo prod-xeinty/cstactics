@@ -10,7 +10,7 @@ export interface Database {
 }
 
 /** Имена серверных секретов. Значения — только в Workers Secrets / .dev.vars. */
-export type SecretName = "STEAM_API_KEY" | "TURNSTILE_SECRET_KEY";
+export type SecretName = "STEAM_API_KEY" | "TURNSTILE_SECRET_KEY" | "FACEIT_API_KEY";
 
 /** Публичные настройки (wrangler.jsonc → vars). Не секреты: их можно отдавать в HTML. */
 export type PublicVarName = "TURNSTILE_SITE_KEY";
