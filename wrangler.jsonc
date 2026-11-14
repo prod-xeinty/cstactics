@@ -27,6 +27,8 @@
     "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiterObject" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["RateLimiterObject"] }],
+  // Раз в 6 часов проверяем до 10 игроков с просроченной FACEIT-группой.
+  "triggers": { "crons": ["0 */6 * * *"] },
   // Публичные настройки (не секреты). Site key Turnstile — из панели Cloudflare.
   // Пусто = Turnstile выключен (см. docs/security/app-security.md). Secret key — только `wrangler secret put TURNSTILE_SECRET_KEY`.
   "vars": {

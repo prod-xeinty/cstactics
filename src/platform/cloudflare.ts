@@ -16,6 +16,10 @@ function d1(binding: D1Database): Database {
       const res = await prepare(sql, params).run();
       return { changes: res.meta.changes ?? 0 };
     },
+    async batch(statements) {
+      const results = await binding.batch(statements.map((s) => prepare(s.sql, s.params ?? [])));
+      return results.map((r) => ({ changes: r.meta.changes ?? 0 }));
+    },
   };
 }
 
@@ -48,9 +52,11 @@ function durableRateLimiter(ns: DurableObjectNamespace<RateLimiterObject> | unde
   };
 }
 
-export function getPlatform(): Platform {
+export type WorkerBindings = { DB: D1Database; MEDIA_PRIVATE?: R2Bucket; MEDIA_PUBLIC?: R2Bucket; RATE_LIMITER?: DurableObjectNamespace<RateLimiterObject> } & Partial<Record<SecretName | PublicVarName, string>>;
+
+export function createCloudflarePlatform(runtimeEnv: WorkerBindings): Platform {
   // R2-бакеты могут быть не подключены (см. wrangler.jsonc), поэтому типизируем их как необязательные.
-  const optional = env as unknown as {
+  const optional = runtimeEnv as unknown as {
     MEDIA_PRIVATE?: R2Bucket;
     MEDIA_PUBLIC?: R2Bucket;
     RATE_LIMITER?: DurableObjectNamespace<RateLimiterObject>;
@@ -60,7 +66,7 @@ export function getPlatform(): Platform {
     public: optional.MEDIA_PUBLIC,
   };
   return {
-    db: d1(env.DB),
+    db: d1(runtimeEnv.DB),
     media: (bucket) => {
       const b = buckets[bucket];
       return b ? r2(b) : null;
@@ -75,4 +81,8 @@ export function getPlatform(): Platform {
     },
     rateLimiter: durableRateLimiter(optional.RATE_LIMITER),
   };
+}
+
+export function getPlatform(): Platform {
+  return createCloudflarePlatform(env as unknown as WorkerBindings);
 }

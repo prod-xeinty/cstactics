@@ -7,6 +7,13 @@ export interface Database {
   all<T = Record<string, unknown>>(sql: string, params?: readonly unknown[]): Promise<T[]>;
   /** INSERT/UPDATE/DELETE. `changes` — сколько строк затронуто. */
   run(sql: string, params?: readonly unknown[]): Promise<{ changes: number }>;
+  /** Выполнить подготовленные записи одной транзакцией; ошибка откатывает весь список. */
+  batch(statements: readonly SqlStatement[]): Promise<{ changes: number }[]>;
+}
+
+export interface SqlStatement {
+  sql: string;
+  params?: readonly unknown[];
 }
 
 /** Имена серверных секретов. Значения — только в Workers Secrets / .dev.vars. */
