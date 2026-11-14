@@ -6,6 +6,7 @@ import { getPlatform } from "@/platform";
 import { latestGamePatch } from "@/patches/repository";
 import { PatchNotice } from "@/patches/PatchNotice";
 import { TacticCarousel } from "./TacticCarousel";
+import { FaceitWelcome } from "@/faceit/FaceitWelcome";
 import { demoTactics } from "./home-data";
 import styles from "./page.module.css";
 
@@ -20,6 +21,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   try { patch = await latestGamePatch((await getPlatform()).db); } catch { /* next dev без D1 */ }
   return <main>
     <PatchNotice patch={patch} />
+    {session && params.welcome === "1" && <FaceitWelcome />}
     {params.login === "failed" && <p role="alert" className={styles.loginError}>Не вышло зайти через Steam. Попробуй ещё раз.</p>}
     <div className={styles.container}>
       <TacticCarousel />
