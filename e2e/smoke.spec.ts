@@ -19,6 +19,25 @@ function collectErrors(page: Page): string[] {
 }
 
 test.describe("главная и вход", () => {
+  test("подборка без Steam-сессии приглашает войти", async ({ page }) => {
+    await page.goto("/for-me");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Сначала зайди через Steam");
+    await expect(page.getByRole("main").getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
+  });
+
+  test("каталог: фильтры стороны и состава работают вместе", async ({ page }) => {
+    await page.goto("/tactics");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Каталог тактик");
+    await page.getByLabel("Сторона").selectOption("CT");
+    await page.getByLabel("Состав").selectOption("3");
+    await page.getByRole("button", { name: "Показать" }).click();
+    await expect(page.locator("article")).toHaveCount(1);
+    await expect(page.locator("article h2")).toHaveText("Ретейк Б втроём");
+    await page.getByLabel("Сторона").selectOption("T");
+    await page.getByRole("button", { name: "Показать" }).click();
+    await expect(page.getByText("Под этот фильтр пока пусто")).toBeVisible();
+  });
+
   test("главная открывается без ошибок в консоли, есть вход через Steam", async ({ page }) => {
     const errors = collectErrors(page);
     const res = await page.goto("/");

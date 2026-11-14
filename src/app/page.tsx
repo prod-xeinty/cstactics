@@ -6,6 +6,7 @@ import { getPlatform } from "@/platform";
 import { latestGamePatch } from "@/patches/repository";
 import { PatchNotice } from "@/patches/PatchNotice";
 import { TacticCarousel } from "./TacticCarousel";
+import { FaceitWelcome } from "@/faceit/FaceitWelcome";
 import { demoTactics } from "./home-data";
 import styles from "./page.module.css";
 
@@ -20,12 +21,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   try { patch = await latestGamePatch((await getPlatform()).db); } catch { /* next dev без D1 */ }
   return <main>
     <PatchNotice patch={patch} />
+    {session && params.welcome === "1" && <FaceitWelcome />}
     {params.login === "failed" && <p role="alert" className={styles.loginError}>Не вышло зайти через Steam. Попробуй ещё раз.</p>}
     <div className={styles.container}>
       <TacticCarousel />
       <section className={styles.more} id="tactics" aria-labelledby="more-heading">
         <div className={styles.sectionIntro}><p className={styles.eyebrow}>Из блокнота</p><h2 id="more-heading">Ещё раунды на Dust2</h2><p>Пока это черновики. Проверим их в игре — тогда откроем оценки и полный разбор.</p></div>
         <div className={styles.tacticList}>{demoTactics.map((tactic, index) => <article key={tactic.title} className={styles.tacticRow}><span className={styles.rowNumber}>0{index + 1}</span><div><h3>{tactic.title}</h3><p>{tactic.call}</p></div><span className={styles.rowMeta}>{tactic.side} · {tactic.team}</span></article>)}</div>
+        <a href="/tactics" className={styles.catalogLink}>Открыть каталог Dust2 →</a>
       </section>
       <section className={styles.explainer} aria-labelledby="explainer-heading">
         <p className={styles.eyebrow}>Как это работает</p><h2 id="explainer-heading">Раунд, который можно заколить быстро</h2>

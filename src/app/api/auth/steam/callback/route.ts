@@ -72,5 +72,5 @@ async function handleCallback(request: Request): Promise<Response> {
   if (oldToken) await deleteSession(platform.db, oldToken);
   const token = await createSession(platform.db, user.id, now);
 
-  return redirect("/", [serializeCookie(SESSION_COOKIE, token, SESSION_TTL_MS / 1000), clearCookie(STATE_COOKIE)]);
+  return redirect("/?welcome=1", [serializeCookie(SESSION_COOKIE, token, SESSION_TTL_MS / 1000), clearCookie(STATE_COOKIE)]);
 }

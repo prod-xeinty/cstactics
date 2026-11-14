@@ -38,7 +38,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
             <div className={styles.headerInner}>
               <a href="/" className={styles.logo} aria-label="КОЛЛ.GG — на главную">КОЛЛ<span>.GG</span></a>
               <nav className={styles.nav} aria-label="Основная навигация">
-                <a href="/">Тактики</a>
+                <a href="/tactics">Тактики</a>
+                <a href="/for-me">Под твоё эло</a>
               </nav>
               {session ? (
                 <div className={styles.account}>

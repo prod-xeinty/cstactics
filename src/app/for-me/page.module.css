@@ -1,0 +1,11 @@
+.page { max-width: 1440px; min-height: 70vh; margin: 0 auto; padding: 64px 40px 96px; }
+.eyebrow { margin: 0 0 14px; color: var(--route); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.page h1 { max-width: 920px; margin: 0 0 18px; font: 700 clamp(52px, 8vw, 104px)/.98 var(--font-display); text-transform: uppercase; }
+.page > p:not(.eyebrow), .lead { max-width: 680px; font-size: 18px; color: var(--ink-muted); }
+.action { display: inline-flex; align-items: center; min-height: 48px; margin-top: 22px; padding: 10px 18px; border: 1px solid var(--ink); background: var(--highlight); font-weight: 700; text-decoration: none; }
+.page section { margin-top: 62px; }.page section h2, .empty h2 { margin: 0 0 20px; font: 700 38px/1.1 var(--font-display); text-transform: uppercase; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { padding: 24px; border: 1px solid var(--rule); background: var(--paper-raised); }.card h3 { margin: 16px 0 8px; font: 700 30px/1.1 var(--font-display); text-transform: uppercase; }.card p { margin: 0 0 20px; }
+.meta { color: var(--route); font-size: 13px; font-weight: 700; text-transform: uppercase; }.ownScore { font-weight: 700; }.comparison { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 12px; border-top: 1px solid var(--rule); color: var(--ink-muted); font-size: 14px; }
+.empty, .emptyLine { padding: 32px; border: 1px solid var(--rule); background: var(--paper-raised); }.emptyLine { margin: 0; }
+@media (max-width: 700px) { .page { padding: 36px 16px 64px; }.page h1 { font-size: clamp(48px, 14vw, 70px); }.grid { grid-template-columns: 1fr; }.page section h2 { font-size: 30px; } }
