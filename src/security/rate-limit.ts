@@ -9,6 +9,8 @@ export const RATE_LIMITS = {
   loginCallback: { limit: 10, windowMs: 60_000 },
   /** Выход: на IP. */
   logout: { limit: 30, windowMs: 60_000 },
+  /** Добавление версии игры: на модератора и IP. */
+  patch: { limit: 10, windowMs: 60_000 },
 } as const satisfies Record<string, RateLimitRule>;
 
 export type RateLimitName = keyof typeof RATE_LIMITS;
