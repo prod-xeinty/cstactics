@@ -19,6 +19,12 @@ function collectErrors(page: Page): string[] {
 }
 
 test.describe("главная и вход", () => {
+  test("анкета без Steam-сессии приглашает войти", async ({ page }) => {
+    await page.goto("/submit");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Зайди через Steam");
+    await expect(page.getByRole("main").getByRole("link", { name: "Войти через Steam" })).toHaveAttribute("href", "/login");
+  });
+
   test("подборка без Steam-сессии приглашает войти", async ({ page }) => {
     await page.goto("/for-me");
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Сначала зайди через Steam");

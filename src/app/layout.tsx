@@ -40,6 +40,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
               <nav className={styles.nav} aria-label="Основная навигация">
                 <a href="/tactics">Тактики</a>
                 <a href="/for-me">Под твоё эло</a>
+                <a href="/submit">+ Своя тактика</a>
               </nav>
               {session ? (
                 <div className={styles.account}>
