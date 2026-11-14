@@ -1,0 +1,25 @@
+.page { max-width: 1440px; margin: 0 auto; padding: 48px 40px 96px; }
+.intro { max-width: 850px; margin-bottom: 42px; }
+.intro p { margin: 0 0 14px; color: var(--route); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.intro h1 { margin: 0 0 16px; font: 700 clamp(56px, 8vw, 112px)/.95 var(--font-display); letter-spacing: -.045em; text-transform: uppercase; }
+.intro span { display: block; max-width: 640px; color: var(--ink-muted); font-size: 19px; }
+.filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 20px 0 28px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+.filters label { display: grid; gap: 8px; min-width: 150px; font-size: 13px; font-weight: 700; }
+.filters select { min-height: 48px; padding: 8px 36px 8px 12px; border: 1px solid var(--rule); border-radius: 0; background: var(--paper-raised); color: var(--ink); cursor: pointer; }
+.filters button, .reset, .empty a { min-height: 48px; padding: 10px 18px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--ink); text-decoration: none; font-weight: 700; cursor: pointer; }
+.filters button { background: var(--highlight); color: var(--ink); }.reset { background: transparent; }
+.filters button:hover, .reset:hover, .empty a:hover { background: var(--ink); color: var(--paper-raised); }
+.resultHead { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; font: 600 16px var(--font-display); text-transform: uppercase; }
+.resultHead p { margin: 0; }
+.demoBanner { margin: 0 0 22px; padding: 14px 18px; border-left: 4px solid var(--warning); background: var(--paper-raised); color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.card { min-height: 350px; display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--rule); background: var(--paper-raised); }
+.cardTop { display: flex; justify-content: space-between; gap: 12px; color: var(--route); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.card h2 { margin: 24px 0 12px; font: 700 clamp(32px, 3vw, 45px)/1.03 var(--font-display); text-transform: uppercase; }
+.call { max-width: 520px; margin: 0 0 24px; font-size: 18px; font-weight: 600; }
+.meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; }
+.meta span { border: 1px solid var(--rule); padding: 5px 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.rating { margin: 22px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); color: var(--ink-muted); font-size: 14px; }
+.empty { margin: 16px 0; padding: 48px; border: 1px solid var(--rule); background: var(--paper-raised); }
+.empty h2 { margin: 0 0 8px; font: 700 36px var(--font-display); text-transform: uppercase; }.empty p { color: var(--ink-muted); }.empty a { width: max-content; background: var(--highlight); }
+@media (max-width: 700px) { .page { padding: 32px 16px 64px; }.intro { margin-bottom: 30px; }.intro h1 { font-size: clamp(50px, 15vw, 72px); }.filters { display: grid; grid-template-columns: 1fr 1fr; }.filters label:nth-child(3) { grid-column: 1 / -1; }.filters select { width: 100%; }.grid { grid-template-columns: 1fr; }.card { min-height: 300px; }.resultHead { font-size: 14px; }.empty { padding: 28px; } }
