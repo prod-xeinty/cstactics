@@ -21,5 +21,16 @@ export function createTestDb(): Database {
       const r = db.prepare(sql).run(...norm(params));
       return { changes: Number(r.changes) };
     },
+    async batch(statements) {
+      db.exec("BEGIN");
+      try {
+        const results = statements.map((s) => ({ changes: Number(db.prepare(s.sql).run(...norm(s.params ?? [])).changes) }));
+        db.exec("COMMIT");
+        return results;
+      } catch (err) {
+        db.exec("ROLLBACK");
+        throw err;
+      }
+    },
   };
 }

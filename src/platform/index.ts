@@ -8,6 +8,7 @@ export type {
   RateLimitResult,
   RateLimitRule,
   SecretName,
+  SqlStatement,
   StoredObjectInfo,
 } from "./types";
 
