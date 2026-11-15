@@ -21,7 +21,7 @@
   .headerInner, .footerInner { padding: 0 16px; }
   .headerInner { min-height: 72px; flex-wrap: wrap; gap: 0 16px; padding-top: 12px; padding-bottom: 8px; }
   .logo { font-size: 28px; }
-  .nav { order: 3; width: 100%; gap: 20px; }
+  .nav { order: 3; width: 100%; gap: 20px; overflow-x: auto; white-space: nowrap; }
   .nav a { font-size: 14px; }
   .headerAction { padding: 8px 12px; font-size: 13px; }
   .account { gap: 8px; }

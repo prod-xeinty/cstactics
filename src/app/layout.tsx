@@ -50,6 +50,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <a href="/tactics">Тактики</a>
                 <a href="/for-me">Под твоё эло</a>
                 <a href="/submit">+ Своя тактика</a>
+                {session && (session.user.role === "moderator" || session.user.role === "admin") && <a href="/moderation">На проверке</a>}
               </nav>
               {session ? (
                 <div className={styles.account}>

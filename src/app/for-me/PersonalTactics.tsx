@@ -28,7 +28,7 @@ export function PersonalTactics({ tactics, unavailable }: { tactics: PersonalTac
 
 function Card({ tactic, ownBand }: { tactic: PersonalTactic; ownBand: CatalogBand }) {
   return <article className={styles.card}>
-    <div className={styles.meta}>Dust2 · {tactic.side} · {tactic.teamSize} игрока</div>
+    <div className={styles.meta}>Dust2 · {tactic.side} · {tactic.teamSize} игрока{tactic.source === "player" && ` · От игрока ${tactic.author}`}</div>
     <h3>{tactic.title}</h3><p>{tactic.call}</p>
     <p className={styles.ownScore}>Твоя шкала: {tactic.scores[ownBand].works === null ? "мало голосов" : `Работает ${tactic.scores[ownBand].works.toFixed(1)} · Легко зайти ${tactic.scores[ownBand].easy?.toFixed(1)}`}</p>
     <div className={styles.comparison}>{bands.map((band) => <span key={band}>{bandNames[band]} {tactic.scores[band].works?.toFixed(1) ?? "—"}</span>)}</div>

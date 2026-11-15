@@ -6,8 +6,8 @@ export type PersonalTactic = CatalogTactic & { scores: Record<CatalogBand, BandS
 const bands: CatalogBand[] = ["low", "mid", "high"];
 
 export async function listPersonalized(db: Database): Promise<PersonalTactic[]> {
-  const rows = await db.all<{ id: string; slug: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number }>(
-    "SELECT id, slug, content, side, team_size, economy, difficulty FROM tactics WHERE map = 'dust2' AND status = 'published' ORDER BY created_at DESC, id",
+  const rows = await db.all<{ id: string; slug: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; source: "authors" | "player"; nickname: string }>(
+    "SELECT t.id, t.slug, t.content, t.side, t.team_size, t.economy, t.difficulty, t.source, u.nickname FROM tactics t JOIN users u ON u.id = t.author_id WHERE t.map = 'dust2' AND t.status = 'published' ORDER BY t.created_at DESC, t.id",
   );
   const stats = await db.all<{ tactic_id: string; band: CatalogBand; vote_count: number; works_sum: number; easy_sum: number }>(
     "SELECT rs.tactic_id, rs.band, rs.vote_count, rs.works_sum, rs.easy_sum FROM rating_stats rs JOIN tactics t ON t.id = rs.tactic_id WHERE t.map = 'dust2' AND t.status = 'published' AND rs.band IN ('low','mid','high')",
@@ -25,7 +25,7 @@ export async function listPersonalized(db: Database): Promise<PersonalTactic[]> 
     if (!content || typeof content !== "object") return [];
     const data = content as Record<string, unknown>;
     if (typeof data.title !== "string" || typeof data.call !== "string") return [];
-    return [{ id: row.id, slug: row.slug, title: data.title, call: data.call, side: row.side, teamSize: row.team_size, economy: row.economy, difficulty: row.difficulty, voteCount: 0, works: null, easy: null, scores: scores.get(row.id)! }];
+    return [{ id: row.id, slug: row.slug, title: data.title, call: data.call, side: row.side, teamSize: row.team_size, economy: row.economy, difficulty: row.difficulty, source: row.source, author: row.nickname, voteCount: 0, works: null, easy: null, scores: scores.get(row.id)! }];
   });
 }
 

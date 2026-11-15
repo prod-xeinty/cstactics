@@ -6,6 +6,7 @@ const score = (votes: number, works: number | null) => ({ votes, works, easy: wo
 const tactic = (id: string, votes: number, works: number | null): PersonalTactic => ({
   id, slug: id, title: id, call: "Колл", side: "T", teamSize: 5, economy: "full", difficulty: 2,
   voteCount: 0, works: null, easy: null,
+  source: "authors", author: "Игрок",
   scores: { low: score(0, null), mid: score(0, null), high: score(votes, works) },
 });
 
