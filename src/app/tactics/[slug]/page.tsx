@@ -1,11 +1,24 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getPlatform } from "@/platform";
 import { getPublishedDetail, type TacticDetail } from "@/tactics/detail";
 import { fixtureTacticSource, readList } from "@/tactics/source";
 import { economyLabel } from "@/tactics/types";
+import { getPublishedTacticSeo } from "@/tactics/seo";
+import { tacticMetadata, unlistedTacticMetadata } from "@/seo/metadata";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    const tactic = await getPublishedTacticSeo((await getPlatform()).db, slug);
+    if (tactic) return tacticMetadata(tactic);
+  } catch { /* D1 недоступна: страницу не индексируем */ }
+  const demo = (await readList(fixtureTacticSource)).find((item) => item.slug === slug);
+  return unlistedTacticMetadata(demo ? `${demo.title} — демо-черновик` : undefined);
+}
 
 const economyNames: Record<string, string> = { eco: "Эко", force: "Форс", full: "Фулл бай", any: "Любая" };
 const nadeNames: Record<string, string> = { smoke: "Смок", flash: "Флешка", molotov: "Молик", he: "Хаешка", decoy: "Декой" };

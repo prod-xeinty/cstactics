@@ -1,10 +1,22 @@
 import { getPlatform, type Database } from "@/platform";
+import type { Metadata } from "next";
 import { hasPublishedTactics, parseCatalogFilters, type CatalogTactic } from "@/tactics/catalog";
 import { fixtureTacticSource, publishedTacticSource, readList } from "@/tactics/source";
 import { economyLabel, teamLabel } from "@/tactics/types";
+import { OG_IMAGE_URL, SITE_NAME, SITE_ORIGIN } from "@/seo/site";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: `Тактики Dust2 | ${SITE_NAME}`,
+  description: "Каталог тактик CS2 на Dust2: выбирай сторону, состав и FACEIT-шкалу.",
+  alternates: { canonical: `${SITE_ORIGIN}/tactics` },
+  openGraph: {
+    title: `Тактики Dust2 | ${SITE_NAME}`, description: "Найди готовый раунд под свой состав.",
+    url: `${SITE_ORIGIN}/tactics`, siteName: SITE_NAME, type: "website", locale: "ru_RU",
+    images: [{ url: OG_IMAGE_URL, width: 1200, height: 630, alt: `${SITE_NAME} — тактики Dust2` }],
+  },
+};
 const economyNames: Record<string, string> = { eco: "Эко", force: "Форс", full: "Фулл бай", any: "Любая" };
 
 export default async function TacticsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
