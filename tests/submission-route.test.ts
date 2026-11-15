@@ -19,11 +19,13 @@ async function request(data: unknown = payload, file?: File, csrf = true) {
 
 describe("отправка тактики", () => {
   let db: ReturnType<typeof createTestDb>;
+  let privateStorage: { put: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
   beforeEach(async () => {
     vi.clearAllMocks();
     db = createTestDb();
     await db.run("INSERT INTO users (id, steam_id64, nickname, role, created_at, updated_at) VALUES ('u', '76561198000000000', 'Автор', 'user', '2026-01-01', '2026-01-01')");
-    mocks.getPlatform.mockResolvedValue({ db, rateLimiter: {} });
+    privateStorage = { put: vi.fn(async () => undefined), delete: vi.fn(async () => undefined) };
+    mocks.getPlatform.mockResolvedValue({ db, rateLimiter: {}, media: (bucket: string) => bucket === "private" ? privateStorage : null });
     mocks.getCurrentSession.mockResolvedValue({ user: { id: "u" } });
     mocks.enforceRateLimit.mockResolvedValue(null);
   });
@@ -41,10 +43,33 @@ describe("отправка тактики", () => {
     expect(await db.all("SELECT status, source FROM tactics")).toEqual([{ status: "pending", source: "player" }]);
   });
 
-  it("не принимает неподходящее видео и не обещает загрузку до #12", async () => {
+  it("не принимает неподходящее видео", async () => {
     expect((await POST(await request(payload, new File(["x"], "bad.txt", { type: "text/plain" })))).status).toBe(400);
     expect((await POST(await request(payload, new File([new Uint8Array(10 * 1024 * 1024 + 1)], "big.mp4", { type: "video/mp4" })))).status).toBe(400);
-    expect((await POST(await request(payload, new File(["x"], "good.mp4", { type: "video/mp4" })))).status).toBe(503);
+    expect(await db.all("SELECT id FROM tactics")).toEqual([]);
+  });
+
+  it("проверяет MP4, кладёт его приватно и сохраняет внутреннюю ссылку", async () => {
+    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
+    const response = await POST(await request(payload, new File([bytes], "round.mp4", { type: "video/mp4" })));
+
+    expect(response.status).toBe(201);
+    expect(privateStorage.put).toHaveBeenCalledOnce();
+    const [key, body, options] = privateStorage.put.mock.calls[0];
+    expect(key).toMatch(/^pending\/[0-9a-f-]+\/[0-9a-f-]+\.mp4$/);
+    expect(new Uint8Array(body)).toEqual(bytes);
+    expect(options).toEqual({ contentType: "video/mp4", onlyIfAbsent: true });
+    const media = await db.first<{ id: string; status: string; checksum: string; size_bytes: number; private_object_key: string }>("SELECT id, status, checksum, size_bytes, private_object_key FROM tactic_media");
+    expect(media).toMatchObject({ status: "verified", checksum: "9a3156818dc204048ffebe800a2d4e286e697e597c3d463ae687e76b2bce5353", size_bytes: 12 });
+    expect(media?.private_object_key).toBe(key);
+    const tactic = await db.first<{ content: string }>("SELECT content FROM tactics");
+    expect(JSON.parse(tactic!.content).videoUrl).toBe(`/media/${media!.id}`);
+  });
+
+  it("не создаёт тактику, если приватное хранилище не подключено", async () => {
+    mocks.getPlatform.mockResolvedValueOnce({ db, rateLimiter: {}, media: () => null });
+    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70]);
+    expect((await POST(await request(payload, new File([bytes], "round.mp4", { type: "video/mp4" })))).status).toBe(503);
     expect(await db.all("SELECT id FROM tactics")).toEqual([]);
   });
 });
