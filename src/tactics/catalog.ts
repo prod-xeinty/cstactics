@@ -6,6 +6,7 @@ export type CatalogTeam = "all" | "2" | "3" | "5";
 export interface CatalogFilters { side: CatalogSide; team: CatalogTeam; band: CatalogBand }
 export interface CatalogTactic {
   id: string;
+  slug: string;
   title: string;
   call: string;
   side: "T" | "CT";
@@ -25,7 +26,7 @@ export function parseCatalogFilters(params: Record<string, string | string[] | u
   };
 }
 
-interface Row { id: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; vote_count: number | null; works_sum: number | null; easy_sum: number | null }
+interface Row { id: string; slug: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; vote_count: number | null; works_sum: number | null; easy_sum: number | null }
 
 export async function hasPublishedTactics(db: Database): Promise<boolean> {
   return !!(await db.first("SELECT id FROM tactics WHERE map = 'dust2' AND status = 'published' LIMIT 1"));
@@ -33,7 +34,7 @@ export async function hasPublishedTactics(db: Database): Promise<boolean> {
 
 export async function listCatalog(db: Database, filters: CatalogFilters): Promise<CatalogTactic[]> {
   const rows = await db.all<Row>(
-    `SELECT t.id, t.content, t.side, t.team_size, t.economy, t.difficulty,
+    `SELECT t.id, t.slug, t.content, t.side, t.team_size, t.economy, t.difficulty,
             rs.vote_count, rs.works_sum, rs.easy_sum
      FROM tactics t LEFT JOIN rating_stats rs ON rs.tactic_id = t.id AND rs.band = ?
      WHERE t.map = 'dust2' AND t.status = 'published'
@@ -53,7 +54,7 @@ export async function listCatalog(db: Database, filters: CatalogFilters): Promis
     if (typeof data.title !== "string" || typeof data.call !== "string") return [];
     const count = row.vote_count ?? 0;
     return [{
-      id: row.id, title: data.title, call: data.call,
+      id: row.id, slug: row.slug, title: data.title, call: data.call,
       side: row.side, teamSize: row.team_size, economy: row.economy, difficulty: row.difficulty,
       voteCount: count,
       works: count >= 5 && row.works_sum !== null ? Math.round(row.works_sum / count * 10) / 10 : null,

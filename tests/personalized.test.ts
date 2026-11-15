@@ -4,7 +4,7 @@ import { createTestDb } from "./sqlite-db";
 
 const score = (votes: number, works: number | null) => ({ votes, works, easy: works });
 const tactic = (id: string, votes: number, works: number | null): PersonalTactic => ({
-  id, title: id, call: "Колл", side: "T", teamSize: 5, economy: "full", difficulty: 2,
+  id, slug: id, title: id, call: "Колл", side: "T", teamSize: 5, economy: "full", difficulty: 2,
   voteCount: 0, works: null, easy: null,
   scores: { low: score(0, null), mid: score(0, null), high: score(votes, works) },
 });

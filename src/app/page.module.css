@@ -13,6 +13,7 @@
 .tags { display: flex; flex-wrap: wrap; gap: 8px; }
 .tags span { border: 1px solid var(--rule); padding: 5px 10px; text-transform: uppercase; font-size: 13px; font-weight: 700; }
 .demoNote { margin: auto 0 0; padding-top: 28px; color: var(--warning); font-size: 14px; font-weight: 600; }
+.detailLink { align-self: flex-start; display: inline-flex; align-items: center; min-height: 48px; margin-top: 24px; padding: 9px 18px; border: 1px solid var(--ink); background: var(--highlight); font-weight: 700; text-decoration: none; }
 .quickBlock { border-left: 1px solid var(--rule); padding: 48px 36px; display: flex; flex-direction: column; background: #f4f0e7; }
 .quickLabel { color: var(--route); }
 .quickBlock ol { margin: 22px 0 0; padding: 0; list-style: none; counter-reset: step; }
@@ -36,6 +37,7 @@
 .tacticRow { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--rule); }
 .rowNumber { font: 600 28px/1 var(--font-display); color: var(--route); }
 .tacticRow h3 { margin: 0; font: 600 25px/1.15 var(--font-display); text-transform: uppercase; }
+.tacticRow h3 a { color: inherit; text-decoration: none; }.tacticRow h3 a:hover { color: var(--route); text-decoration: underline; }
 .tacticRow p { margin: 6px 0 0; color: var(--ink-muted); }
 .rowMeta { font-size: 13px; font-weight: 700; white-space: nowrap; }
 .catalogLink { grid-column: 2; width: max-content; min-height: 44px; display: inline-flex; align-items: center; border-bottom: 2px solid var(--route); font-weight: 700; text-decoration: none; }
