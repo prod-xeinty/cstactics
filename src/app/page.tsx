@@ -7,12 +7,14 @@ import { latestGamePatch } from "@/patches/repository";
 import { PatchNotice } from "@/patches/PatchNotice";
 import { TacticCarousel } from "./TacticCarousel";
 import { FaceitWelcome } from "@/faceit/FaceitWelcome";
-import { demoTactics } from "./home-data";
+import { fixtureTacticSource, readList } from "@/tactics/source";
+import { economyLabel, teamLabel } from "@/tactics/types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const demoTactics = await readList(fixtureTacticSource);
   const [h, params] = await Promise.all([headers(), searchParams]);
   const session = await getCurrentSession(h.get("cookie"));
   const sessionToken = readCookie(h.get("cookie"), SESSION_COOKIE);
@@ -24,10 +26,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     {session && params.welcome === "1" && <FaceitWelcome />}
     {params.login === "failed" && <p role="alert" className={styles.loginError}>Не вышло зайти через Steam. Попробуй ещё раз.</p>}
     <div className={styles.container}>
-      <TacticCarousel />
+      <TacticCarousel tactics={demoTactics} />
       <section className={styles.more} id="tactics" aria-labelledby="more-heading">
         <div className={styles.sectionIntro}><p className={styles.eyebrow}>Из блокнота</p><h2 id="more-heading">Ещё раунды на Dust2</h2><p>Пока это черновики. Проверим их в игре — тогда откроем оценки и дополним разбор.</p></div>
-        <div className={styles.tacticList}>{demoTactics.map((tactic, index) => <article key={tactic.title} className={styles.tacticRow}><span className={styles.rowNumber}>0{index + 1}</span><div><h3><a href={`/tactics/${tactic.slug}`}>{tactic.title}</a></h3><p>{tactic.call}</p></div><span className={styles.rowMeta}>{tactic.side} · {tactic.team}</span></article>)}</div>
+        <div className={styles.tacticList}>{demoTactics.map((tactic, index) => <article key={tactic.title} className={styles.tacticRow}><span className={styles.rowNumber}>0{index + 1}</span><div><h3><a href={`/tactics/${tactic.slug}`}>{tactic.title}</a></h3><p>{tactic.call}</p></div><span className={styles.rowMeta}>{tactic.side} · {teamLabel(tactic.teamSize)} · {economyLabel(tactic.economy)}</span></article>)}</div>
         <a href="/tactics" className={styles.catalogLink}>Открыть каталог Dust2 →</a>
       </section>
       <section className={styles.explainer} aria-labelledby="explainer-heading">

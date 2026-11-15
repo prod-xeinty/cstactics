@@ -1,5 +1,6 @@
 // FACEIT Data API. Ответ живёт только во время запроса: срок допустимого кеширования не подтверждён.
-export type FaceitBand = "low" | "mid" | "high" | "none";
+import type { FaceitBand } from "@/tactics/types";
+export type { FaceitBand } from "@/tactics/types";
 
 export type FaceitLookup =
   | { status: "ready"; level: number; elo: number; band: Exclude<FaceitBand, "none"> }
