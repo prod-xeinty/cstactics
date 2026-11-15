@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { demoTactics } from "@/app/home-data";
 import { getPlatform } from "@/platform";
 import { getPublishedDetail, type TacticDetail } from "@/tactics/detail";
+import { fixtureTacticSource, readList } from "@/tactics/source";
+import { economyLabel } from "@/tactics/types";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -10,12 +11,12 @@ const economyNames: Record<string, string> = { eco: "Эко", force: "Форс",
 const nadeNames: Record<string, string> = { smoke: "Смок", flash: "Флешка", molotov: "Молик", he: "Хаешка", decoy: "Декой" };
 const bands = [{ key: "low", label: "Лоу · 1–3" }, { key: "mid", label: "Мид · 4–7" }, { key: "high", label: "Хай · 8–10" }] as const;
 
-function demoDetail(slug: string): TacticDetail | null {
-  const tactic = demoTactics.find((item) => item.slug === slug);
+async function demoDetail(slug: string): Promise<TacticDetail | null> {
+  const tactic = (await readList(fixtureTacticSource)).find((item) => item.slug === slug);
   if (!tactic) return null;
   return {
     id: tactic.slug, slug: tactic.slug, title: tactic.title, call: tactic.call, quick: [...tactic.quick],
-    side: tactic.side, teamSize: tactic.teamSize, economy: tactic.economy, difficulty: Number(tactic.difficulty[0]),
+    side: tactic.side, teamSize: tactic.teamSize, economy: economyLabel(tactic.economy), difficulty: tactic.difficulty,
     gameVersion: "", author: "", source: "authors", roles: [], roleFallback: "", nades: [], flow: [],
     fallback: "", postPlant: "", counters: "", videoUrl: null,
     ratings: {
@@ -27,7 +28,7 @@ function demoDetail(slug: string): TacticDetail | null {
 
 export default async function TacticDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const demo = demoDetail(slug);
+  const demo = await demoDetail(slug);
   let detail: TacticDetail | null = null;
   try { detail = await getPublishedDetail((await getPlatform()).db, slug); }
   catch { if (!demo) return <main className={styles.page}><a className={styles.back} href="/tactics">← В каталог</a><div className={styles.notice} role="alert"><h1>Разбор пока не загрузился</h1><p>Попробуй открыть страницу чуть позже.</p></div></main>; }

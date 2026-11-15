@@ -1,7 +1,8 @@
 import type { Database } from "@/platform";
+import type { FaceitBand, Side } from "./types";
 
-export type CatalogBand = "low" | "mid" | "high";
-export type CatalogSide = "all" | "T" | "CT";
+export type CatalogBand = Exclude<FaceitBand, "none">;
+export type CatalogSide = "all" | Side;
 export type CatalogTeam = "all" | "2" | "3" | "5";
 export interface CatalogFilters { side: CatalogSide; team: CatalogTeam; band: CatalogBand }
 export interface CatalogTactic {
@@ -9,7 +10,7 @@ export interface CatalogTactic {
   slug: string;
   title: string;
   call: string;
-  side: "T" | "CT";
+  side: Side;
   teamSize: number;
   economy: string;
   difficulty: number;
