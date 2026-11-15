@@ -21,12 +21,16 @@ async function post(id: string, action: string, reason = "", csrf = true, origin
 
 describe("модерация тактик", () => {
   let db: ReturnType<typeof createTestDb>;
+  let privateStorage: { get: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
+  let publicStorage: { put: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
   beforeEach(async () => {
     vi.clearAllMocks();
     db = createTestDb();
     await db.run("INSERT INTO users (id, steam_id64, nickname, role, created_at, updated_at) VALUES ('author', '76561198000000000', '<b>Автор</b>', 'user', '2026-01-01', '2026-01-01'), ('mod', '76561198000000001', 'Модератор', 'moderator', '2026-01-01', '2026-01-01')");
     await db.run("INSERT INTO tactics (id, slug, map, side, team_size, economy, difficulty, content, game_version, source, author_id, status, created_at, updated_at) VALUES ('pending', 'pending', 'dust2', 'T', 5, 'full', 2, ?, 'v1', 'player', 'author', 'pending', '2026-01-01', '2026-01-01'), ('published', 'published', 'dust2', 'T', 5, 'full', 2, ?, 'v1', 'player', 'author', 'published', '2026-01-01', '2026-01-01')", [content, content]);
-    mocks.getPlatform.mockResolvedValue({ db });
+    privateStorage = { get: vi.fn(async () => null), delete: vi.fn(async () => undefined) };
+    publicStorage = { put: vi.fn(async () => undefined), delete: vi.fn(async () => undefined) };
+    mocks.getPlatform.mockResolvedValue({ db, rateLimiter: { hit: vi.fn(async () => ({ ok: true, remaining: 1, retryAfterMs: 0 })) }, media: (bucket: string) => bucket === "private" ? privateStorage : publicStorage });
     mocks.getCurrentSession.mockResolvedValue({ user: { id: "mod", role: "moderator" } });
   });
 
@@ -45,6 +49,18 @@ describe("модерация тактик", () => {
     await db.run("INSERT INTO tactic_media (id, tactic_id, content_type, size_bytes, checksum, status, created_at) VALUES ('media', 'pending', 'video/mp4', 10, 'hash', 'uploaded', '2026-01-01')");
     expect(await moderateTactic(db, "pending", "mod", "published", null)).toBe("media_not_ready");
     expect(await db.all("SELECT status FROM tactics WHERE id = 'pending'")).toEqual([{ status: "pending" }]);
+  });
+
+  it("перед публикацией повторно проверяет видео и удаляет приватную копию", async () => {
+    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
+    await db.run("INSERT INTO tactic_media (id, tactic_id, private_object_key, content_type, size_bytes, checksum, status, created_at, verified_at) VALUES ('media', 'pending', 'pending/tactic/media.mp4', 'video/mp4', 12, '9a3156818dc204048ffebe800a2d4e286e697e597c3d463ae687e76b2bce5353', 'verified', '2026-01-01', '2026-01-01')");
+    privateStorage.get.mockResolvedValue({ body: new Response(bytes).body!, size: 12, contentType: "video/mp4" });
+
+    expect((await post("pending", "published")).status).toBe(303);
+    expect(publicStorage.put).toHaveBeenCalledOnce();
+    expect(privateStorage.delete).toHaveBeenCalledWith("pending/tactic/media.mp4");
+    expect(await db.all("SELECT status FROM tactics WHERE id = 'pending'")).toEqual([{ status: "published" }]);
+    expect(await db.all("SELECT status FROM tactic_media WHERE id = 'media'")).toEqual([{ status: "published" }]);
   });
 
   it("не даёт обычному игроку менять статус и проверяет CSRF", async () => {

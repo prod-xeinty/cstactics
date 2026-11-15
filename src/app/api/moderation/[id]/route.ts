@@ -4,6 +4,7 @@ import { getPlatform } from "@/platform";
 import { isSameOrigin, isValidCsrfToken, submittedCsrfToken } from "@/security/csrf";
 import { enforceRateLimit } from "@/security/rate-limit";
 import { moderateTactic } from "@/tactics/moderation";
+import { prepareTacticMediaForPublication, VideoPublicationError } from "@/tactics/video-publication";
 
 export const dynamic = "force-dynamic";
 const reply = (message: string, status: number) => new Response(message, { status, headers: { "Cache-Control": "no-store" } });
@@ -33,8 +34,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const limited = await enforceRateLimit(platform.rateLimiter, "patch", session.user.id);
   if (limited) return limited;
   const { id } = await params;
+  let privateKeys: string[] = [];
+  if (action === "published") {
+    try { privateKeys = await prepareTacticMediaForPublication(platform, id); }
+    catch (error) {
+      if (error instanceof VideoPublicationError && error.code === "not_ready") return reply("Видео ещё не готово к публикации", 409);
+      if (error instanceof VideoPublicationError && error.code === "invalid") return reply("Видео изменилось после проверки. Загрузи его заново.", 409);
+      return reply("Хранилище видео временно недоступно", 503);
+    }
+  }
   const result = await moderateTactic(platform.db, id, session.user.id, action, action === "rejected" ? reason : null);
   if (result === "media_not_ready") return reply("Видео ещё не готово к публикации", 409);
   if (result === "conflict") return reply("Эту заявку уже разобрали или она не найдена", 409);
+  if (action === "published" && privateKeys.length) {
+    const storage = platform.media("private");
+    if (storage) await Promise.allSettled(privateKeys.map((key) => storage.delete(key)));
+  }
   return new Response(null, { status: 303, headers: { Location: `/moderation?done=${action}`, "Cache-Control": "no-store" } });
 }
