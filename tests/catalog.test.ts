@@ -24,4 +24,13 @@ describe("каталог тактик", () => {
     // Пустой результат фильтра не означает, что весь каталог ещё демо.
     expect(await hasPublishedTactics(db)).toBe(true);
   });
+
+  it("показывает автора опубликованной игроком тактики и скрывает pending", async () => {
+    const db = createTestDb();
+    await db.run("INSERT INTO users (id, steam_id64, nickname, role, created_at, updated_at) VALUES ('u', '76561198000000000', 'Игрок', 'user', '2026-01-01', '2026-01-01')");
+    for (const [id, status] of [["yes", "published"], ["no", "pending"]] as const) {
+      await db.run("INSERT INTO tactics (id, slug, map, side, team_size, economy, difficulty, content, game_version, source, author_id, status, created_at, updated_at) VALUES (?, ?, 'dust2', 'T', 5, 'full', 2, ?, 'v1', 'player', 'u', ?, '2026-01-01', '2026-01-01')", [id, id, JSON.stringify({ title: "Колл", call: "Лонг" }), status]);
+    }
+    expect(await listCatalog(db, { side: "all", team: "all", band: "mid" })).toMatchObject([{ id: "yes", source: "player", author: "Игрок" }]);
+  });
 });

@@ -14,6 +14,8 @@ export interface CatalogTactic {
   teamSize: number;
   economy: string;
   difficulty: number;
+  source: "authors" | "player";
+  author: string;
   voteCount: number;
   works: number | null;
   easy: number | null;
@@ -27,7 +29,7 @@ export function parseCatalogFilters(params: Record<string, string | string[] | u
   };
 }
 
-interface Row { id: string; slug: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; vote_count: number | null; works_sum: number | null; easy_sum: number | null }
+interface Row { id: string; slug: string; content: string; side: "T" | "CT"; team_size: number; economy: string; difficulty: number; source: "authors" | "player"; nickname: string; vote_count: number | null; works_sum: number | null; easy_sum: number | null }
 
 export async function hasPublishedTactics(db: Database): Promise<boolean> {
   return !!(await db.first("SELECT id FROM tactics WHERE map = 'dust2' AND status = 'published' LIMIT 1"));
@@ -35,9 +37,10 @@ export async function hasPublishedTactics(db: Database): Promise<boolean> {
 
 export async function listCatalog(db: Database, filters: CatalogFilters): Promise<CatalogTactic[]> {
   const rows = await db.all<Row>(
-    `SELECT t.id, t.slug, t.content, t.side, t.team_size, t.economy, t.difficulty,
+    `SELECT t.id, t.slug, t.content, t.side, t.team_size, t.economy, t.difficulty, t.source, u.nickname,
             rs.vote_count, rs.works_sum, rs.easy_sum
-     FROM tactics t LEFT JOIN rating_stats rs ON rs.tactic_id = t.id AND rs.band = ?
+     FROM tactics t JOIN users u ON u.id = t.author_id
+       LEFT JOIN rating_stats rs ON rs.tactic_id = t.id AND rs.band = ?
      WHERE t.map = 'dust2' AND t.status = 'published'
        AND (? = 'all' OR t.side = ?)
        AND (? = 'all' OR t.team_size = CAST(? AS INTEGER))
@@ -57,6 +60,7 @@ export async function listCatalog(db: Database, filters: CatalogFilters): Promis
     return [{
       id: row.id, slug: row.slug, title: data.title, call: data.call,
       side: row.side, teamSize: row.team_size, economy: row.economy, difficulty: row.difficulty,
+      source: row.source, author: row.nickname,
       voteCount: count,
       works: count >= 5 && row.works_sum !== null ? Math.round(row.works_sum / count * 10) / 10 : null,
       easy: count >= 5 && row.easy_sum !== null ? Math.round(row.easy_sum / count * 10) / 10 : null,

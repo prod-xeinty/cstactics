@@ -14,7 +14,7 @@
 .demoBanner { margin: 0 0 22px; padding: 14px 18px; border-left: 4px solid var(--warning); background: var(--paper-raised); color: var(--ink); }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .card { min-height: 350px; display: flex; flex-direction: column; padding: 24px; border: 1px solid var(--rule); background: var(--paper-raised); }
-.cardTop { display: flex; justify-content: space-between; gap: 12px; color: var(--route); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.cardTop { display: flex; justify-content: space-between; gap: 12px; color: var(--route); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; overflow-wrap: anywhere; }
 .card h2 { margin: 24px 0 12px; font: 700 clamp(32px, 3vw, 45px)/1.03 var(--font-display); text-transform: uppercase; }
 .call { max-width: 520px; margin: 0 0 24px; font-size: 18px; font-weight: 600; }
 .meta { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; }
