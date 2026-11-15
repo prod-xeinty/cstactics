@@ -13,6 +13,27 @@ Workflow **«Деплой»** (`.github/workflows/deploy.yml`):
 
 Пока не включён (переменная `DEPLOY_ENABLED`), прогон зелёный и пишет «выключен» — и **не трогает окружение** (иначе GitHub создал бы `production` сам, без правил по веткам). После включения пропавший секрет — красный прогон.
 
+Отдельно от GitHub Actions работает Cloudflare Workers Builds: он уже деплоит `main` в production. Его PR Preview требует отдельной настройки ниже. Красный Preview Build не означает, что production-деплой после слияния упал; проверяй оба прогона отдельно.
+
+## Preview для PR
+
+У Preview есть отдельная D1 `kollgg-preview` (`2add319a-375b-479a-9308-3ef92429b602`). В `wrangler.jsonc` она указана только в `previews.d1_databases`, а production `DB` остаётся `kollgg`. Каждый Preview получает собственный Durable Object лимитера. Секреты Steam и FACEIT в Preview не скопированы: вход и персональная подборка там не тестируются до отдельной безопасной настройки.
+
+После добавления SQL-миграции сначала примени её к Preview D1 с локального терминала в корне репозитория:
+
+```powershell
+npx wrangler d1 migrations apply PREVIEW_DB --remote --config wrangler.preview-migrations.jsonc
+```
+
+В Cloudflare Dashboard → Workers & Pages → `cstactics` → Settings → Builds для **Preview / Non-production** задай:
+
+- Build command: `npm run build:vinext`
+- Preview / Deploy command: `npx wrangler preview --config dist/server/wrangler.json`
+
+Сейчас в панели стоит `npx wrangler preview` без сборки: он читает корневой конфиг, а этому Next/vinext-приложению нужен сгенерированный `dist/server/wrangler.json` и `dist/client`. Production-команды не меняй. Локальная проверка всего пути: `npm run preview:vinext` (создаст/обновит Preview с именем текущей ветки).
+
+Перед включением R2 для #12 добавь в `previews` отдельные тестовые бакеты; боевые бакеты в PR не подключай.
+
 Известное ограничение: сразу после деплоя смоук может попасть в старую версию воркера (обе отвечают одинаково) — тогда он подтверждает старую. Для MVP приемлемо; позже — номер версии в `/api/health`.
 
 ### Настройка (один раз)
