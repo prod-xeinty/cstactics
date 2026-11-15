@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createTestDb } from "./sqlite-db";
 import { getPublishedTacticSeo, listPublishedTacticSeo } from "@/tactics/seo";
@@ -32,7 +32,11 @@ describe("SEO тактик", () => {
     expect(metadata.alternates?.canonical).toBe(`${SITE_ORIGIN}/tactics/published`);
     expect(metadata.openGraph).toMatchObject({ url: `${SITE_ORIGIN}/tactics/published`, images: [{ url: OG_IMAGE_URL }] });
     expect(unlistedTacticMetadata("Демо").robots).toMatchObject({ index: false, follow: false });
-    expect(existsSync("public/og-default.png")).toBe(true);
+    const image = readFileSync("public/og-default.png");
+    expect(image.byteLength).toBeLessThan(16 * 1024);
+    expect(image.subarray(1, 4).toString()).toBe("PNG");
+    expect(image.readUInt32BE(16)).toBe(1200);
+    expect(image.readUInt32BE(20)).toBe(630);
   });
 
   it("robots.txt указывает на sitemap и не направляет ботов в API", () => {
