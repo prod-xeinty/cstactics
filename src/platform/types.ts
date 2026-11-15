@@ -17,10 +17,10 @@ export interface SqlStatement {
 }
 
 /** Имена серверных секретов. Значения — только в Workers Secrets / .dev.vars. */
-export type SecretName = "STEAM_API_KEY" | "TURNSTILE_SECRET_KEY" | "FACEIT_API_KEY";
+export type SecretName = "STEAM_API_KEY" | "TURNSTILE_SECRET_KEY" | "FACEIT_API_KEY" | "SUPABASE_SERVICE_ROLE_KEY";
 
 /** Публичные настройки (wrangler.jsonc → vars). Не секреты: их можно отдавать в HTML. */
-export type PublicVarName = "TURNSTILE_SITE_KEY";
+export type PublicVarName = "TURNSTILE_SITE_KEY" | "SUPABASE_URL";
 
 export interface RateLimitRule {
   /** Сколько запросов разрешено в окне. */
@@ -47,11 +47,18 @@ export interface StoredObjectInfo {
   size: number;
 }
 
+export interface StoredObject {
+  body: ReadableStream;
+  /** null, если origin не прислал Content-Length; фактический размер проверяется по прочитанным байтам. */
+  size: number | null;
+  contentType: string | null;
+}
+
 export interface ObjectStorage {
   /** Список объектов (для проверки доступа и служебных задач). */
   list(options?: { prefix?: string; limit?: number }): Promise<StoredObjectInfo[]>;
-  put(key: string, body: ArrayBuffer | ReadableStream | string, options?: { contentType?: string }): Promise<void>;
-  get(key: string): Promise<ReadableStream | null>;
+  put(key: string, body: ArrayBuffer | ReadableStream | string, options?: { contentType?: string; onlyIfAbsent?: boolean }): Promise<void>;
+  get(key: string): Promise<StoredObject | null>;
   delete(key: string): Promise<void>;
 }
 

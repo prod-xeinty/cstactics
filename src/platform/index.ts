@@ -10,6 +10,7 @@ export type {
   SecretName,
   SqlStatement,
   StoredObjectInfo,
+  StoredObject,
 } from "./types";
 
 // Реализация подгружается лениво: под обычным `next dev` модуля `cloudflare:workers` нет,

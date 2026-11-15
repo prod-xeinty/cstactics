@@ -14,7 +14,7 @@
       "migrations_dir": "migrations"
     }
   ],
-  // R2 пока не включён (нужна платёжная карта на аккаунте). Раскомментировать, когда дойдём до #12 (загрузка видео),
+  // R2 оставлен как совместимый запасной адаптер. Для MVP видео хранится в Supabase Storage,
   // и создать бакеты: `wrangler r2 bucket create kollgg-media-private` / `kollgg-media-public`.
   // "r2_buckets": [
   //   // Видео до модерации (приватный)
@@ -32,7 +32,8 @@
   // Публичные настройки (не секреты). Site key Turnstile — из панели Cloudflare.
   // Пусто = Turnstile выключен (см. docs/security/app-security.md). Secret key — только `wrangler secret put TURNSTILE_SECRET_KEY`.
   "vars": {
-    "TURNSTILE_SITE_KEY": ""
+    "TURNSTILE_SITE_KEY": "",
+    "SUPABASE_URL": "https://inqwhzfhxkxaznckypdw.supabase.co"
   },
   // Логи Workers (бесплатно: 200 000 записей в сутки, хранение 3 дня). Как смотреть — docs/ops/diagnostics.md.
   // Встроенные записи о запросах выключены: не проверено, что в них нет cookie и IP. Вместо них — своя запись
