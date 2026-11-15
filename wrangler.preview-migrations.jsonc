@@ -1,0 +1,12 @@
+{
+  // Только для миграций общей Preview-базы. Не использовать с production DB.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "d1_databases": [
+    {
+      "binding": "PREVIEW_DB",
+      "database_name": "kollgg-preview",
+      "database_id": "2add319a-375b-479a-9308-3ef92429b602",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -34,6 +34,21 @@
   "vars": {
     "TURNSTILE_SITE_KEY": ""
   },
+  // Preview PR не наследует боевые bindings. Общая тестовая D1 создана отдельно от kollgg.
+  // Лимитер автоматически получает отдельное хранилище Durable Object для каждого Preview.
+  "previews": {
+    "vars": { "TURNSTILE_SITE_KEY": "" },
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "kollgg-preview",
+        "database_id": "2add319a-375b-479a-9308-3ef92429b602"
+      }
+    ],
+    "durable_objects": {
+      "bindings": [{ "name": "RATE_LIMITER", "class_name": "RateLimiterObject" }]
+    }
+  },
   // Логи Workers (бесплатно: 200 000 записей в сутки, хранение 3 дня). Как смотреть — docs/ops/diagnostics.md.
   // Встроенные записи о запросах выключены: не проверено, что в них нет cookie и IP. Вместо них — своя запись
   // «request» из worker/index.ts (метод, путь, статус, время). Параметры URL вырезаются на всякий случай.
