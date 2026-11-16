@@ -58,7 +58,7 @@ export interface ObjectStorage {
   /** Список объектов (для проверки доступа и служебных задач). */
   list(options?: { prefix?: string; limit?: number }): Promise<StoredObjectInfo[]>;
   put(key: string, body: ArrayBuffer | ReadableStream | string, options?: { contentType?: string; onlyIfAbsent?: boolean }): Promise<void>;
-  get(key: string): Promise<StoredObject | null>;
+  get(key: string, range?: { start: number; end: number }): Promise<StoredObject | null>;
   delete(key: string): Promise<void>;
 }
 
