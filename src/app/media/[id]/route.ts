@@ -61,8 +61,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   }
   const storage = platform.media(bucket);
   if (!storage) return new Response("Хранилище видео недоступно", { status: 503, headers: { "Cache-Control": "no-store" } });
+  const range = parseRange(request.headers.get("range"), media.size_bytes);
+  if (range === "invalid") {
+    return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${media.size_bytes}`, "Cache-Control": cacheControl, "Accept-Ranges": "bytes" } });
+  }
   let object;
-  try { object = await storage.get(key); }
+  try { object = range ? await storage.get(key, range) : await storage.get(key); }
   catch { return new Response("Хранилище видео недоступно", { status: 503, headers: { "Cache-Control": "no-store" } }); }
   if (!object) return missing();
   if (object.contentType !== media.content_type || (object.size !== null && object.size !== media.size_bytes)) {
@@ -76,17 +80,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     "Cross-Origin-Resource-Policy": "same-origin",
     "Accept-Ranges": "bytes",
   };
-  const range = parseRange(request.headers.get("range"), media.size_bytes);
-  if (range === "invalid") {
-    return new Response(null, { status: 416, headers: { ...commonHeaders, "Content-Range": `bytes */${media.size_bytes}` } });
-  }
   if (range) {
-    const bytes = new Uint8Array(await new Response(object.body).arrayBuffer());
-    if (bytes.byteLength !== media.size_bytes) return new Response("Видео не прошло проверку", { status: 503, headers: { "Cache-Control": "no-store" } });
-    const partial = bytes.slice(range.start, range.end + 1);
-    return new Response(partial, { status: 206, headers: {
+    return new Response(object.body, { status: 206, headers: {
       ...commonHeaders,
-      "Content-Length": String(partial.byteLength),
+      "Content-Length": String(range.end - range.start + 1),
       "Content-Range": `bytes ${range.start}-${range.end}/${media.size_bytes}`,
     } });
   }

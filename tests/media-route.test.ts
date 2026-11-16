@@ -37,15 +37,20 @@ describe("выдача опубликованного видео", () => {
   });
 
   it("поддерживает Range для воспроизведения и перемотки", async () => {
+    publicStorage.get.mockImplementationOnce(async (_key: string, range: { start: number; end: number }) => ({
+      body: new Response(MP4_BYTES.slice(range.start, range.end + 1)).body!, size: 24, contentType: "video/mp4",
+    }));
     const response = await GET(new Request("https://example.test/media/media", { headers: { Range: "bytes=4-7" } }), { params: Promise.resolve({ id: "media" }) });
     expect(response.status).toBe(206);
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(MP4_BYTES.slice(4, 8));
     expect(response.headers.get("content-range")).toBe("bytes 4-7/24");
     expect(response.headers.get("content-length")).toBe("4");
     expect(response.headers.get("accept-ranges")).toBe("bytes");
+    expect(publicStorage.get).toHaveBeenCalledWith("published/tactic/media.mp4", { start: 4, end: 7 });
     const invalid = await GET(new Request("https://example.test/media/media", { headers: { Range: "bytes=30-40" } }), { params: Promise.resolve({ id: "media" }) });
     expect(invalid.status).toBe(416);
     expect(invalid.headers.get("content-range")).toBe("bytes */24");
+    expect(publicStorage.get).toHaveBeenCalledTimes(1);
   });
 
   it("даёт moderator приватный preview pending-видео, но не обычному игроку", async () => {
