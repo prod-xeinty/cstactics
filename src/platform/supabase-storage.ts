@@ -61,13 +61,27 @@ export function createSupabaseStorage(config: SupabaseStorageConfig, bucket: str
         body,
       }));
     },
-    async get(key) {
-      const response = await fetch(endpoint(key), { headers: headers() });
+    async get(key, range) {
+      const response = await fetch(endpoint(key), { headers: {
+        ...headers(), ...(range ? { Range: `bytes=${range.start}-${range.end}` } : {}),
+      } });
       if (response.status === 404) return null;
       await checked(response);
+      if (range && response.status !== 206) {
+        await response.body?.cancel();
+        throw new Error("Supabase Storage: сервер не вернул запрошенный диапазон");
+      }
       if (!response.body) throw new Error("Supabase Storage: пустой ответ объекта");
       const rawSize = response.headers.get("content-length");
-      const size = rawSize !== null && /^\d+$/.test(rawSize) ? Number(rawSize) : null;
+      let size = rawSize !== null && /^\d+$/.test(rawSize) ? Number(rawSize) : null;
+      if (range) {
+        const contentRange = /^bytes (\d+)-(\d+)\/(\d+)$/.exec(response.headers.get("content-range") ?? "");
+        if (!contentRange || Number(contentRange[1]) !== range.start || Number(contentRange[2]) !== range.end || size !== range.end - range.start + 1) {
+          await response.body.cancel();
+          throw new Error("Supabase Storage: некорректный диапазон ответа");
+        }
+        size = Number(contentRange[3]);
+      }
       return { body: response.body, size, contentType: response.headers.get("content-type") };
     },
     async delete(key) {

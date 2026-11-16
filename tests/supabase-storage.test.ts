@@ -64,6 +64,20 @@ describe("Supabase Storage", () => {
     expect(await storage.get("missing.webm")).toBeNull();
   });
 
+  it("скачивает только запрошенный диапазон и проверяет ответ origin", async () => {
+    const fetchMock = vi.fn(async () => new Response(new Uint8Array([2, 3]), { status: 206, headers: {
+      "content-type": "video/webm", "content-length": "2", "content-range": "bytes 1-2/4",
+    } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const storage = createSupabaseStorage(config, "private-bucket");
+    const object = await storage.get("video.webm", { start: 1, end: 2 });
+    expect(new Headers((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers).get("range")).toBe("bytes=1-2");
+    expect(object?.size).toBe(4);
+    expect(new Uint8Array(await new Response(object!.body).arrayBuffer())).toEqual(new Uint8Array([2, 3]));
+    fetchMock.mockResolvedValueOnce(new Response(new Uint8Array([1, 2, 3, 4]), { status: 200 }));
+    await expect(storage.get("video.webm", { start: 1, end: 2 })).rejects.toThrow("диапазон");
+  });
+
   it("показывает код ошибки Supabase без содержимого ответа", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("внутренние детали", { status: 507 })));
     const storage = createSupabaseStorage(config, "private-bucket");

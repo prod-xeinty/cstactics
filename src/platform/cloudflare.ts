@@ -33,9 +33,9 @@ function r2(bucket: R2Bucket): ObjectStorage {
     async put(key, body, options) {
       await bucket.put(key, body, { httpMetadata: { contentType: options?.contentType } });
     },
-    async get(key) {
-      const obj = await bucket.get(key);
-      return obj ? { body: obj.body, size: obj.size, contentType: obj.httpMetadata?.contentType ?? null } : null;
+    async get(key, range) {
+      const obj = await bucket.get(key, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined);
+      return obj && "body" in obj ? { body: obj.body, size: obj.size, contentType: obj.httpMetadata?.contentType ?? null } : null;
     },
     async delete(key) {
       await bucket.delete(key);
