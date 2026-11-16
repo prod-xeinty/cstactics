@@ -37,9 +37,9 @@ export async function POST(request: Request): Promise<Response> {
   const mediaId = file instanceof File && file.size > 0 ? crypto.randomUUID() : null;
   let privateKey: string | null = null;
   let video: Awaited<ReturnType<typeof inspectVideo>> | null = null;
-  let videoBytes: ArrayBuffer | null = null;
   let privateStorage: ReturnType<typeof platform.media> = null;
   if (mediaId && file instanceof File) {
+    let videoBytes: ArrayBuffer;
     try {
       videoBytes = await file.arrayBuffer();
       video = await inspectVideo(videoBytes, file.type);

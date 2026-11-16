@@ -32,6 +32,20 @@ Workflow **«Деплой»** (`.github/workflows/deploy.yml`):
 3. **Включить:** Settings → Secrets and variables → Actions → Variables → `DEPLOY_ENABLED` = `1`.
 4. Actions → «Деплой» → Run workflow → убедиться, что смоук зелёный.
 
+### Supabase Storage для видео (один раз)
+
+Проект: `https://inqwhzfhxkxaznckypdw.supabase.co`. Значение server/service role key в репозиторий, issue, PR и логи не вставлять.
+
+1. Supabase Dashboard → Storage → New bucket:
+   - `tactic-videos-private`: **Public bucket выключен**, лимит файла 10 МБ, MIME `video/mp4` и `video/webm`;
+   - `tactic-videos-public`: **Public bucket включён**, лимит файла 10 МБ, те же MIME.
+2. Supabase Dashboard → Project Settings → API Keys: скопировать серверный secret key (или legacy `service_role`). Не использовать anon/publishable key.
+3. На своей машине из корня проекта выполнить `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY`, вставить ключ в скрытый prompt Wrangler и подтвердить.
+4. Для локальной проверки добавить `SUPABASE_SERVICE_ROLE_KEY=...` только в `.dev.vars` (файл игнорируется Git).
+5. После деплоя открыть `/api/health`: `media_private` и `media_public` должны быть `ok`, не `skipped` или `fail`.
+
+Политики Storage для пользовательских ролей не нужны: браузер не обращается к Supabase напрямую, все операции выполняет Worker с серверным ключом.
+
 ## Правила для миграций
 - Миграции применяются **до** нового кода, а откатывается при сбое только код. Поэтому миграции — **только добавляющие**: новые таблицы и колонки (с `DEFAULT` или `NULL`), новые индексы. Старый код должен работать на новой схеме.
 - CI проверяет это сам (`scripts/check-migrations.mjs`): `DROP`, переименование, `DELETE`, `UPDATE` в новых миграциях — красный PR. Если так и задумано — метка PR **«разрушающая миграция»** и в описании план: когда, точка отката Time Travel, что с кодом.
