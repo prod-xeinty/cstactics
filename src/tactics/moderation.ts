@@ -1,7 +1,7 @@
 import type { Database } from "@/platform";
-import { submissionSchema, type Submission } from "./submission";
+import { storedSubmissionSchema, type StoredSubmission } from "./submission";
 
-export interface PendingTactic extends Submission {
+export interface PendingTactic extends StoredSubmission {
   id: string;
   author: string;
   createdAt: string;
@@ -18,7 +18,7 @@ export async function listPendingTactics(db: Database): Promise<PendingTactic[]>
   return rows.flatMap((row) => {
     let content: unknown;
     try { content = JSON.parse(row.content); } catch { return []; }
-    const parsed = submissionSchema.safeParse(content);
+    const parsed = storedSubmissionSchema.safeParse(content);
     return parsed.success ? [{ id: row.id, author: row.nickname, createdAt: row.created_at, ...parsed.data }] : [];
   });
 }

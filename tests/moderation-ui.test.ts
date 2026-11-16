@@ -10,6 +10,7 @@ describe("карточка заявки", () => {
       title: "<script>alert(1)</script>", side: "T", teamSize: 5, economy: "full", difficulty: 2,
       gameVersion: "v1", spawnDependent: false, call: "Идём на A", quick: ["Забираем лонг"],
       roles: [], roleFallback: "", nades: [], flow: "", fallback: "", postPlant: "", counters: "",
+      videoUrl: "/media/media",
     }, csrf: "safe-token" }));
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
     expect(html).toContain("&lt;b&gt;Автор&lt;/b&gt;");
@@ -18,5 +19,7 @@ describe("карточка заявки", () => {
     expect(html).toContain("value=\"published\"");
     expect(html).toContain("value=\"rejected\"");
     expect(html).toContain("Без привязки к спавну");
+    expect(html).toContain("<video");
+    expect(html).toContain("src=\"/media/media\"");
   });
 });

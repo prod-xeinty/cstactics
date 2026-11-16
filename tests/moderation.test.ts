@@ -3,6 +3,7 @@ import { createTestDb } from "./sqlite-db";
 import { csrfTokenFor } from "@/security/csrf";
 import { listPendingTactics, moderateTactic } from "@/tactics/moderation";
 import { POST } from "@/app/api/moderation/[id]/route";
+import { MP4_BYTES, MP4_SHA256 } from "./video-fixtures";
 
 const mocks = vi.hoisted(() => ({ getPlatform: vi.fn(), getCurrentSession: vi.fn() }));
 vi.mock("@/platform", () => ({ getPlatform: mocks.getPlatform }));
@@ -21,17 +22,23 @@ async function post(id: string, action: string, reason = "", csrf = true, origin
 
 describe("модерация тактик", () => {
   let db: ReturnType<typeof createTestDb>;
+  let privateStorage: { get: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
+  let publicStorage: { put: ReturnType<typeof vi.fn>; delete: ReturnType<typeof vi.fn> };
   beforeEach(async () => {
     vi.clearAllMocks();
     db = createTestDb();
     await db.run("INSERT INTO users (id, steam_id64, nickname, role, created_at, updated_at) VALUES ('author', '76561198000000000', '<b>Автор</b>', 'user', '2026-01-01', '2026-01-01'), ('mod', '76561198000000001', 'Модератор', 'moderator', '2026-01-01', '2026-01-01')");
     await db.run("INSERT INTO tactics (id, slug, map, side, team_size, economy, difficulty, content, game_version, source, author_id, status, created_at, updated_at) VALUES ('pending', 'pending', 'dust2', 'T', 5, 'full', 2, ?, 'v1', 'player', 'author', 'pending', '2026-01-01', '2026-01-01'), ('published', 'published', 'dust2', 'T', 5, 'full', 2, ?, 'v1', 'player', 'author', 'published', '2026-01-01', '2026-01-01')", [content, content]);
-    mocks.getPlatform.mockResolvedValue({ db });
+    privateStorage = { get: vi.fn(async () => null), delete: vi.fn(async () => undefined) };
+    publicStorage = { put: vi.fn(async () => undefined), delete: vi.fn(async () => undefined) };
+    mocks.getPlatform.mockResolvedValue({ db, rateLimiter: { hit: vi.fn(async () => ({ ok: true, remaining: 1, retryAfterMs: 0 })) }, media: (bucket: string) => bucket === "private" ? privateStorage : publicStorage });
     mocks.getCurrentSession.mockResolvedValue({ user: { id: "mod", role: "moderator" } });
   });
 
   it("показывает только ожидающие заявки с автором и текстом", async () => {
     expect(await listPendingTactics(db)).toMatchObject([{ id: "pending", author: "<b>Автор</b>", title: "Сплит A <script>alert(1)</script>" }]);
+    await db.run("UPDATE tactics SET content = ? WHERE id = 'pending'", [JSON.stringify({ ...JSON.parse(content), videoUrl: "/media/media" })]);
+    expect(await listPendingTactics(db)).toMatchObject([{ id: "pending", videoUrl: "/media/media" }]);
   });
 
   it("публикует только pending и записывает одно решение", async () => {
@@ -45,6 +52,17 @@ describe("модерация тактик", () => {
     await db.run("INSERT INTO tactic_media (id, tactic_id, content_type, size_bytes, checksum, status, created_at) VALUES ('media', 'pending', 'video/mp4', 10, 'hash', 'uploaded', '2026-01-01')");
     expect(await moderateTactic(db, "pending", "mod", "published", null)).toBe("media_not_ready");
     expect(await db.all("SELECT status FROM tactics WHERE id = 'pending'")).toEqual([{ status: "pending" }]);
+  });
+
+  it("перед публикацией повторно проверяет видео и удаляет приватную копию", async () => {
+    await db.run("INSERT INTO tactic_media (id, tactic_id, private_object_key, content_type, size_bytes, checksum, status, created_at, verified_at) VALUES ('media', 'pending', 'pending/tactic/media.mp4', 'video/mp4', 24, ?, 'verified', '2026-01-01', '2026-01-01')", [MP4_SHA256]);
+    privateStorage.get.mockResolvedValue({ body: new Response(MP4_BYTES).body!, size: 24, contentType: "video/mp4" });
+
+    expect((await post("pending", "published")).status).toBe(303);
+    expect(publicStorage.put).toHaveBeenCalledOnce();
+    expect(privateStorage.delete).toHaveBeenCalledWith("pending/tactic/media.mp4");
+    expect(await db.all("SELECT status FROM tactics WHERE id = 'pending'")).toEqual([{ status: "published" }]);
+    expect(await db.all("SELECT status FROM tactic_media WHERE id = 'media'")).toEqual([{ status: "published" }]);
   });
 
   it("не даёт обычному игроку менять статус и проверяет CSRF", async () => {

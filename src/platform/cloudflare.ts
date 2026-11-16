@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import type { RateLimiterObject } from "./rate-limiter-object";
 import type { Database, MediaBucket, ObjectStorage, Platform, PublicVarName, RateLimiter, SecretName } from "./types";
+import { createSupabaseStorage } from "./supabase-storage";
 
 // Единственное место, где мы трогаем Cloudflare-биндинги.
 function d1(binding: D1Database): Database {
@@ -34,7 +35,7 @@ function r2(bucket: R2Bucket): ObjectStorage {
     },
     async get(key) {
       const obj = await bucket.get(key);
-      return obj ? obj.body : null;
+      return obj ? { body: obj.body, size: obj.size, contentType: obj.httpMetadata?.contentType ?? null } : null;
     },
     async delete(key) {
       await bucket.delete(key);
@@ -65,11 +66,17 @@ export function createCloudflarePlatform(runtimeEnv: WorkerBindings): Platform {
     private: optional.MEDIA_PRIVATE,
     public: optional.MEDIA_PUBLIC,
   };
+  const supabaseKey = optional.SUPABASE_SECRET_KEY ?? optional.SUPABASE_SERVICE_ROLE_KEY;
+  const supabase = optional.SUPABASE_URL && supabaseKey
+    ? { url: optional.SUPABASE_URL, secretKey: supabaseKey }
+    : null;
   return {
     db: d1(runtimeEnv.DB),
     media: (bucket) => {
       const b = buckets[bucket];
-      return b ? r2(b) : null;
+      if (b) return r2(b);
+      if (!supabase) return null;
+      return createSupabaseStorage(supabase, bucket === "private" ? "tactic-videos-private" : "tactic-videos-public");
     },
     secret: (name) => {
       const v = optional[name];

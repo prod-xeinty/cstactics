@@ -9,6 +9,7 @@ export function ModerationCard({ tactic, csrf }: { tactic: PendingTactic; csrf: 
     <h2>{tactic.title}</h2>
     <p className={styles.call}>{tactic.call}</p>
     <p className={styles.meta}>Dust2 · {tactic.side} · {tactic.teamSize} игрока · {tactic.economy} · сложность {tactic.difficulty}/3 · {tactic.spawnDependent ? "Роли зависят от спавна" : "Без привязки к спавну"} · версия {tactic.gameVersion}</p>
+    {tactic.videoUrl && <section className={styles.videoBlock}><h3>Видео игрока</h3><video controls preload="metadata" src={tactic.videoUrl}>Твой браузер не поддерживает видео.</video></section>}
     <details className={styles.details}><summary>Развернуть весь раунд</summary>
       <section><h3>Быстрая версия</h3><ol>{tactic.quick.map((line, index) => <li key={index}>{line}</li>)}</ol></section>
       <section><h3>Роли по спавну</h3>{tactic.roles.length ? <ul>{tactic.roles.map((role, index) => <li key={index}>{role.spawnZone} → {role.task}{role.nades && ` · ${role.nades}`}{role.fixed && " · фиксированная"}</li>)}</ul> : <p>Роли не расписаны</p>}{tactic.roleFallback && <p>Если на нужном спавне никого: {tactic.roleFallback}</p>}</section>
