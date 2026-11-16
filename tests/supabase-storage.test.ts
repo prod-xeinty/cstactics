@@ -3,7 +3,7 @@ import { createSupabaseStorage } from "@/platform/supabase-storage";
 
 const config = {
   url: "https://inqwhzfhxkxaznckypdw.supabase.co",
-  serviceRoleKey: "server-secret",
+  secretKey: "server-secret",
 };
 
 describe("Supabase Storage", () => {
@@ -15,7 +15,7 @@ describe("Supabase Storage", () => {
   });
 
   it("загружает объект без upsert и не кладёт ключ в URL", async () => {
-    const fetchMock = vi.fn(async () => new Response("{}", { status: 200 }));
+    const fetchMock = vi.fn(async () => Response.json([]));
     vi.stubGlobal("fetch", fetchMock);
     const storage = createSupabaseStorage(config, "private-bucket");
 
@@ -34,6 +34,19 @@ describe("Supabase Storage", () => {
     expect(new Headers(init.headers).get("x-upsert")).toBe("false");
     expect(new Headers(init.headers).get("content-type")).toBe("video/mp4");
     expect(url).not.toContain("server-secret");
+  });
+
+  it("для нового sb_secret использует только apikey, а legacy JWT также Bearer", async () => {
+    const fetchMock = vi.fn(async () => Response.json([]));
+    vi.stubGlobal("fetch", fetchMock);
+    await createSupabaseStorage({ ...config, secretKey: "sb_secret_test" }, "private-bucket").list();
+    let headers = new Headers((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers);
+    expect(headers.get("apikey")).toBe("sb_secret_test");
+    expect(headers.get("authorization")).toBeNull();
+    fetchMock.mockClear();
+    await createSupabaseStorage({ ...config, secretKey: "eyJlegacy" }, "private-bucket").list();
+    headers = new Headers((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].headers);
+    expect(headers.get("authorization")).toBe("Bearer eyJlegacy");
   });
 
   it("возвращает поток вместе с фактическими метаданными и скрывает 404", async () => {

@@ -34,14 +34,14 @@ Workflow **«Деплой»** (`.github/workflows/deploy.yml`):
 
 ### Supabase Storage для видео (один раз)
 
-Проект: `https://inqwhzfhxkxaznckypdw.supabase.co`. Значение server/service role key в репозиторий, issue, PR и логи не вставлять.
+Проект: `https://inqwhzfhxkxaznckypdw.supabase.co`. Значение secret key в репозиторий, issue, PR и логи не вставлять.
 
 1. Supabase Dashboard → Storage → New bucket:
    - `tactic-videos-private`: **Public bucket выключен**, лимит файла 10 МБ, MIME `video/mp4` и `video/webm`;
    - `tactic-videos-public`: **Public bucket включён**, лимит файла 10 МБ, те же MIME.
-2. Supabase Dashboard → Project Settings → API Keys: скопировать серверный secret key (или legacy `service_role`). Не использовать anon/publishable key.
-3. На своей машине из корня проекта выполнить `npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY`, вставить ключ в скрытый prompt Wrangler и подтвердить.
-4. Для локальной проверки добавить `SUPABASE_SERVICE_ROLE_KEY=...` только в `.dev.vars` (файл игнорируется Git).
+2. Supabase Dashboard → Project Settings → API Keys: скопировать серверный `sb_secret_…`. Не использовать anon/publishable key.
+3. На своей машине из корня проекта выполнить `npx wrangler secret put SUPABASE_SECRET_KEY`, вставить ключ в скрытый prompt Wrangler и подтвердить.
+4. Для локальной проверки добавить `SUPABASE_SECRET_KEY=...` только в `.dev.vars` (файл игнорируется Git).
 5. После деплоя открыть `/api/health`: `media_private` и `media_public` должны быть `ok`, не `skipped` или `fail`.
 
 Политики Storage для пользовательских ролей не нужны: браузер не обращается к Supabase напрямую, все операции выполняет Worker с серверным ключом.

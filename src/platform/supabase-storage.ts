@@ -2,7 +2,7 @@ import type { ObjectStorage, StoredObjectInfo } from "./types";
 
 export interface SupabaseStorageConfig {
   url: string;
-  serviceRoleKey: string;
+  secretKey: string;
 }
 
 function projectUrl(raw: string): URL {
@@ -21,9 +21,13 @@ const pathPart = (value: string) => value.split("/").map(encodeURIComponent).joi
 
 export function createSupabaseStorage(config: SupabaseStorageConfig, bucket: string): ObjectStorage {
   const base = projectUrl(config.url);
-  if (!config.serviceRoleKey) throw new Error("SUPABASE_SERVICE_ROLE_KEY не задан");
+  if (!config.secretKey) throw new Error("SUPABASE_SECRET_KEY не задан");
   if (!bucket || bucket.includes("/")) throw new Error("Некорректное имя бакета Supabase");
-  const headers = () => ({ Authorization: `Bearer ${config.serviceRoleKey}`, apikey: config.serviceRoleKey });
+  const headers = (): Record<string, string> => {
+    const result: Record<string, string> = { apikey: config.secretKey };
+    if (!config.secretKey.startsWith("sb_secret_")) result.Authorization = `Bearer ${config.secretKey}`;
+    return result;
+  };
   const endpoint = (key = "") => new URL(`storage/v1/object/${encodeURIComponent(bucket)}${key ? `/${pathPart(key)}` : ""}`, base).toString();
   const checked = async (response: Response) => {
     if (!response.ok) throw new Error(`Supabase Storage: ${response.status}`);

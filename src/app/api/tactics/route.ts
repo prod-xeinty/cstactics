@@ -3,11 +3,13 @@ import { readCookie, SESSION_COOKIE } from "@/auth/session";
 import { getPlatform } from "@/platform";
 import { isSameOrigin, isValidCsrfToken } from "@/security/csrf";
 import { enforceRateLimit } from "@/security/rate-limit";
+import { readRequestBody, RequestBodyTooLargeError } from "@/security/request-body";
 import { submissionSchema } from "@/tactics/submission";
 import { inspectVideo, MAX_VIDEO_BYTES, privateVideoKey } from "@/tactics/video";
 
 export const dynamic = "force-dynamic";
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
+const MAX_FORM_BYTES = 11 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<Response> {
   if (!isSameOrigin(request)) return json({ error: "Запрос с другого сайта" }, 403);
@@ -20,9 +22,15 @@ export async function POST(request: Request): Promise<Response> {
   if (limited) return limited;
   if (!request.headers.get("content-type")?.includes("multipart/form-data")) return json({ error: "Нужна форма" }, 415);
   const size = Number(request.headers.get("content-length"));
-  if (Number.isFinite(size) && size > 11 * 1024 * 1024) return json({ error: "Видео должно быть до 10 МБ" }, 413);
+  if (Number.isFinite(size) && size > MAX_FORM_BYTES) return json({ error: "Видео должно быть до 10 МБ" }, 413);
   let form: FormData;
-  try { form = await request.formData(); } catch { return json({ error: "Не удалось прочитать форму" }, 400); }
+  try {
+    const body = await readRequestBody(request, MAX_FORM_BYTES);
+    form = await new Request(request.url, { method: "POST", headers: { "Content-Type": request.headers.get("content-type")! }, body }).formData();
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) return json({ error: "Видео должно быть до 10 МБ" }, 413);
+    return json({ error: "Не удалось прочитать форму" }, 400);
+  }
   const file = form.get("video");
   if (file instanceof File && file.size > 0) {
     if (file.size > MAX_VIDEO_BYTES || !["video/mp4", "video/webm"].includes(file.type)) return json({ error: "Видео: только mp4 или webm до 10 МБ" }, 400);

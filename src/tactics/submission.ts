@@ -17,4 +17,10 @@ export const submissionSchema = z.object({
   flow: optional, fallback: optional, postPlant: optional, counters: optional,
 }).strict();
 
+/** Сохранённое содержимое дополняется только серверной ссылкой на медиа. */
+export const storedSubmissionSchema = submissionSchema.extend({
+  videoUrl: z.string().regex(/^\/media\/[a-zA-Z0-9_-]{1,128}$/).optional(),
+}).strict();
+
 export type Submission = z.infer<typeof submissionSchema>;
+export type StoredSubmission = z.infer<typeof storedSubmissionSchema>;

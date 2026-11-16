@@ -3,6 +3,7 @@ import { createTestDb } from "./sqlite-db";
 import { csrfTokenFor } from "@/security/csrf";
 import { listPendingTactics, moderateTactic } from "@/tactics/moderation";
 import { POST } from "@/app/api/moderation/[id]/route";
+import { MP4_BYTES, MP4_SHA256 } from "./video-fixtures";
 
 const mocks = vi.hoisted(() => ({ getPlatform: vi.fn(), getCurrentSession: vi.fn() }));
 vi.mock("@/platform", () => ({ getPlatform: mocks.getPlatform }));
@@ -36,6 +37,8 @@ describe("модерация тактик", () => {
 
   it("показывает только ожидающие заявки с автором и текстом", async () => {
     expect(await listPendingTactics(db)).toMatchObject([{ id: "pending", author: "<b>Автор</b>", title: "Сплит A <script>alert(1)</script>" }]);
+    await db.run("UPDATE tactics SET content = ? WHERE id = 'pending'", [JSON.stringify({ ...JSON.parse(content), videoUrl: "/media/media" })]);
+    expect(await listPendingTactics(db)).toMatchObject([{ id: "pending", videoUrl: "/media/media" }]);
   });
 
   it("публикует только pending и записывает одно решение", async () => {
@@ -52,9 +55,8 @@ describe("модерация тактик", () => {
   });
 
   it("перед публикацией повторно проверяет видео и удаляет приватную копию", async () => {
-    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
-    await db.run("INSERT INTO tactic_media (id, tactic_id, private_object_key, content_type, size_bytes, checksum, status, created_at, verified_at) VALUES ('media', 'pending', 'pending/tactic/media.mp4', 'video/mp4', 12, '9a3156818dc204048ffebe800a2d4e286e697e597c3d463ae687e76b2bce5353', 'verified', '2026-01-01', '2026-01-01')");
-    privateStorage.get.mockResolvedValue({ body: new Response(bytes).body!, size: 12, contentType: "video/mp4" });
+    await db.run("INSERT INTO tactic_media (id, tactic_id, private_object_key, content_type, size_bytes, checksum, status, created_at, verified_at) VALUES ('media', 'pending', 'pending/tactic/media.mp4', 'video/mp4', 24, ?, 'verified', '2026-01-01', '2026-01-01')", [MP4_SHA256]);
+    privateStorage.get.mockResolvedValue({ body: new Response(MP4_BYTES).body!, size: 24, contentType: "video/mp4" });
 
     expect((await post("pending", "published")).status).toBe(303);
     expect(publicStorage.put).toHaveBeenCalledOnce();

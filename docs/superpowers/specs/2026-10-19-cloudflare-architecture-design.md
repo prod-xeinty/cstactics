@@ -243,7 +243,7 @@ Cookie называется __Host-session и имеет HttpOnly, Secure, SameS
 
 ### Секреты
 
-Steam, FACEIT, Supabase service role key и deploy-секреты хранятся только в Workers Secrets или GitHub Actions Secrets. Они не помещаются в wrangler-конфигурацию, исходный код, клиентский bundle и логи.
+Steam, FACEIT, Supabase secret key и deploy-секреты хранятся только в Workers Secrets или GitHub Actions Secrets. Они не помещаются в wrangler-конфигурацию, исходный код, клиентский bundle и логи.
 
 ### Видео
 

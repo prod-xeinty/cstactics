@@ -66,8 +66,9 @@ export function createCloudflarePlatform(runtimeEnv: WorkerBindings): Platform {
     private: optional.MEDIA_PRIVATE,
     public: optional.MEDIA_PUBLIC,
   };
-  const supabase = optional.SUPABASE_URL && optional.SUPABASE_SERVICE_ROLE_KEY
-    ? { url: optional.SUPABASE_URL, serviceRoleKey: optional.SUPABASE_SERVICE_ROLE_KEY }
+  const supabaseKey = optional.SUPABASE_SECRET_KEY ?? optional.SUPABASE_SERVICE_ROLE_KEY;
+  const supabase = optional.SUPABASE_URL && supabaseKey
+    ? { url: optional.SUPABASE_URL, secretKey: supabaseKey }
     : null;
   return {
     db: d1(runtimeEnv.DB),

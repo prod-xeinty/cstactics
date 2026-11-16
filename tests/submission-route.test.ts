@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestDb } from "./sqlite-db";
 import { csrfTokenFor } from "@/security/csrf";
+import { listPendingTactics } from "@/tactics/moderation";
+import { MP4_BYTES, MP4_SHA256 } from "./video-fixtures";
 
 const mocks = vi.hoisted(() => ({ getPlatform: vi.fn(), getCurrentSession: vi.fn(), enforceRateLimit: vi.fn(async () => null as Response | null) }));
 vi.mock("@/platform", () => ({ getPlatform: mocks.getPlatform }));
@@ -50,26 +52,40 @@ describe("отправка тактики", () => {
   });
 
   it("проверяет MP4, кладёт его приватно и сохраняет внутреннюю ссылку", async () => {
-    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70, 0x69, 0x73, 0x6f, 0x6d]);
-    const response = await POST(await request(payload, new File([bytes], "round.mp4", { type: "video/mp4" })));
+    const response = await POST(await request(payload, new File([MP4_BYTES], "round.mp4", { type: "video/mp4" })));
 
     expect(response.status).toBe(201);
     expect(privateStorage.put).toHaveBeenCalledOnce();
     const [key, body, options] = privateStorage.put.mock.calls[0];
     expect(key).toMatch(/^pending\/[0-9a-f-]+\/[0-9a-f-]+\.mp4$/);
-    expect(new Uint8Array(body)).toEqual(bytes);
+    expect(new Uint8Array(body)).toEqual(MP4_BYTES);
     expect(options).toEqual({ contentType: "video/mp4", onlyIfAbsent: true });
     const media = await db.first<{ id: string; status: string; checksum: string; size_bytes: number; private_object_key: string }>("SELECT id, status, checksum, size_bytes, private_object_key FROM tactic_media");
-    expect(media).toMatchObject({ status: "verified", checksum: "9a3156818dc204048ffebe800a2d4e286e697e597c3d463ae687e76b2bce5353", size_bytes: 12 });
+    expect(media).toMatchObject({ status: "verified", checksum: MP4_SHA256, size_bytes: 24 });
     expect(media?.private_object_key).toBe(key);
     const tactic = await db.first<{ content: string }>("SELECT content FROM tactics");
     expect(JSON.parse(tactic!.content).videoUrl).toBe(`/media/${media!.id}`);
+    expect(await listPendingTactics(db)).toMatchObject([{ id: expect.any(String), videoUrl: `/media/${media!.id}` }]);
   });
 
   it("не создаёт тактику, если приватное хранилище не подключено", async () => {
     mocks.getPlatform.mockResolvedValueOnce({ db, rateLimiter: {}, media: () => null });
-    const bytes = new Uint8Array([0, 0, 0, 16, 0x66, 0x74, 0x79, 0x70]);
-    expect((await POST(await request(payload, new File([bytes], "round.mp4", { type: "video/mp4" })))).status).toBe(503);
+    expect((await POST(await request(payload, new File([MP4_BYTES], "round.mp4", { type: "video/mp4" })))).status).toBe(503);
+    expect(await db.all("SELECT id FROM tactics")).toEqual([]);
+  });
+
+  it("отклоняет фактическое тело больше 11 МБ без Content-Length", async () => {
+    const form = new FormData();
+    form.set("payload", JSON.stringify(payload));
+    form.set("video", new File([MP4_BYTES], "round.mp4", { type: "video/mp4" }));
+    form.set("extra", new File([new Uint8Array(12 * 1024 * 1024)], "extra.bin"));
+    const oversized = new Request("https://example.test/api/tactics", {
+      method: "POST",
+      headers: { origin: "https://example.test", cookie: `__Host-session=${TOKEN}`, "x-csrf-token": await csrfTokenFor(TOKEN) },
+      body: form,
+    });
+    expect(oversized.headers.get("content-length")).toBeNull();
+    expect((await POST(oversized)).status).toBe(413);
     expect(await db.all("SELECT id FROM tactics")).toEqual([]);
   });
 });
