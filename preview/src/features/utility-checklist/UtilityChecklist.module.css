@@ -1,0 +1,30 @@
+.section {
+    border-block: 1px solid var(--rule);
+    padding-block: 1.5rem;
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.item {
+    border-top: 1px solid var(--rule);
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    padding-block: 1rem;
+}
+
+.number {
+    color: var(--route);
+    font-family: var(--font-heading);
+    font-weight: 800;
+}
+
+.description {
+    line-height: 1.6;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
