@@ -23,7 +23,6 @@ export function CatalogResults({ tactics, drafts, filters }: CatalogProps & { fi
   const matching = sortTacticsForBand(tactics.filter((tactic) => matchesTacticFilters(tactic, filters)), filters.band);
   const featured = matching.find((tactic) => tactic.featured) ?? null;
   const matchingDrafts = drafts.filter((tactic) => matchesTacticFilters(tactic, filters));
-  const alternatives = featured ? matching.filter(({ id }) => id !== featured.id).slice(0, 3) : [];
 
   return (
     <>
@@ -38,16 +37,15 @@ export function CatalogResults({ tactics, drafts, filters }: CatalogProps & { fi
         </section>
       ) : null}
       {featured ? <FeaturedTactic tactic={featured} band={filters.band} /> : null}
-      {!featured && matchingDrafts.length === 0 ? <TacticList tactics={[]} band={filters.band} /> : null}
-      {featured ? (
-        <section className={styles.alternatives} aria-labelledby="alternatives-title">
+      {matching.length > 0 ? (
+        <section className={styles.alternatives} aria-labelledby="catalog-tactics-title">
           <div className={styles.sectionHeading}>
-            <h2 id="alternatives-title">Другие варианты</h2>
-            <p>Полный каталог появится следующим этапом.</p>
+            <h2 id="catalog-tactics-title">Тактики Dust2</h2>
           </div>
-          <TacticList tactics={alternatives} band={filters.band} />
+          <TacticList tactics={matching} band={filters.band} />
         </section>
       ) : null}
+      {matching.length === 0 && matchingDrafts.length === 0 ? <TacticList tactics={[]} band={filters.band} /> : null}
     </>
   );
 }
