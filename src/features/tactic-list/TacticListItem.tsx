@@ -13,13 +13,17 @@ export function TacticListItem({ tactic, band, index }: { tactic: TacticSummary;
       <div className={styles.copy}>
         <Link href={`/tactics/${tactic.slug}`}>{tactic.title}</Link>
         <p>{tactic.call}</p>
-        <span>{formatSide(tactic.side)} · {formatTeamSize(tactic.teamSize)} · {tactic.duration}</span>
+        <span>{[formatSide(tactic.side), formatTeamSize(tactic.teamSize), tactic.duration].filter(Boolean).join(" · ")}</span>
       </div>
-      <dl className={styles.rating}>
-        <div><dt>Работает</dt><dd>{rating.works}</dd></div>
-        <div><dt>Легко зайти</dt><dd>{rating.easy}</dd></div>
-        <span>{rating.demoLabel} · {rating.votes}</span>
-      </dl>
+      {tactic.status === "draft" ? (
+        <div className={styles.rating}>На проверке</div>
+      ) : (
+        <dl className={styles.rating}>
+          <div><dt>Работает</dt><dd>{rating.works}</dd></div>
+          <div><dt>Легко зайти</dt><dd>{rating.easy}</dd></div>
+          <span>{rating.demoLabel} · {rating.votes}</span>
+        </dl>
+      )}
     </li>
   );
 }

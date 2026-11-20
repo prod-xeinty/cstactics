@@ -2,6 +2,9 @@ node_modules/
 .next/
 .vinext/
 dist/
+out/
+/.dev.vars
+/src/tactics/imported-tactics.local.json
 coverage/
 playwright-report/
 test-results/

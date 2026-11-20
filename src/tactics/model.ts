@@ -29,12 +29,12 @@ export interface TacticSummary {
   spawnDependent: boolean;
   title: string;
   call: string;
-  duration: string;
-  gameVersion: string;
+  duration?: string;
+  gameVersion?: string;
   status: "draft" | "pending" | "published" | "rejected";
   featured: boolean;
-  mapImage: string;
-  mapAlt: string;
+  mapImage?: string;
+  mapAlt?: string;
   ratings: Record<FaceitBand, RatingSummary>;
 }
 

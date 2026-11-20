@@ -1,0 +1,280 @@
+.article {
+    margin-inline: auto;
+    max-width: 72rem;
+    padding-block: clamp(2rem, 6vw, 5rem);
+}
+
+.header {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 7vw, 5.75rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 0.96;
+    margin: 0;
+    max-width: 18ch;
+    overflow-wrap: anywhere;
+}
+
+.call {
+    background: var(--paper-raised);
+    border-left: 0.25rem solid var(--route);
+    font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+    line-height: 1.55;
+    margin-block: clamp(1.5rem, 4vw, 2.5rem);
+    max-width: 65ch;
+    padding: 1rem clamp(1rem, 3vw, 1.5rem);
+}
+
+.quickCallLink {
+    align-items: center;
+    background: var(--highlight);
+    border: 1px solid var(--ink);
+    display: inline-flex;
+    font-weight: 700;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.65rem 1rem;
+    text-decoration: none;
+}
+
+.quickCallLink:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.quickCallLink:active {
+    opacity: 0.82;
+}
+
+.metadata {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    margin-block: clamp(2.5rem, 7vw, 5rem);
+}
+
+.metadataItem {
+    border-block: 1px solid var(--rule);
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: -1px;
+    padding: 1rem;
+}
+
+.metadataLabel {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.metadataValue {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.patchCurrent,
+.patchStale {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.patchCurrent { color: var(--verified); }
+.patchStale { color: var(--warning); }
+
+.ratingGrid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+}
+
+.ratingCard {
+    background: var(--paper-raised);
+    border: 1px solid var(--rule);
+    padding: 1rem;
+}
+
+.ratingCard h3,
+.ratingCard dl,
+.ratingCard p,
+.ratingCard dd {
+    margin: 0;
+}
+
+.ratingCard h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.ratingCard dl > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    justify-content: space-between;
+}
+
+.ratingCard dd { font-weight: 700; }
+
+.ratingCard .voteCount {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    margin-top: 0.75rem;
+}
+
+.quick {
+    margin-block: clamp(2.5rem, 7vw, 5rem);
+}
+
+.sectionTitle {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    line-height: 1.1;
+    margin: 0 0 1.25rem;
+}
+
+.map {
+    border-block: 1px solid var(--rule);
+}
+
+.map summary {
+    cursor: pointer;
+    font-weight: 700;
+    min-height: 44px;
+    padding-block: 0.75rem;
+}
+
+.mapFigure {
+    margin: 0 auto 1rem;
+    max-width: 40rem;
+}
+
+.mapImage {
+    border: 1px solid var(--rule);
+    display: block;
+    height: auto;
+    width: 100%;
+}
+
+.mapFigure a {
+    align-items: center;
+    display: inline-flex;
+    min-height: 44px;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.quickList {
+    counter-reset: quick-step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.quickItem {
+    align-items: baseline;
+    border-top: 1px solid var(--rule);
+    counter-increment: quick-step;
+    display: grid;
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    gap: 1rem;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    padding-block: 1rem;
+}
+
+.quickItem:last-child {
+    border-bottom: 1px solid var(--rule);
+}
+
+.quickItem::before {
+    color: var(--route);
+    content: counter(quick-step, decimal-leading-zero);
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.roleList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.roleItem {
+    border-top: 1px solid var(--rule);
+    display: grid;
+    gap: 0.5rem 1rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    overflow-wrap: anywhere;
+    padding-block: 1rem;
+}
+
+.roleItem:last-child {
+    border-bottom: 1px solid var(--rule);
+}
+
+.roleItem p,
+.roundNote p {
+    margin: 0;
+}
+
+.roleSpawn {
+    font-weight: 700;
+}
+
+.roleItem .roleNades {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.roundNote {
+    border-top: 1px solid var(--rule);
+    overflow-wrap: anywhere;
+    padding-block: 1rem;
+}
+
+.roleList + .roundNote {
+    border-top: 0;
+}
+
+.roundNote h3 {
+    font-size: 1rem;
+    margin: 0 0 0.35rem;
+}
+
+@media (max-width: 36rem) {
+    .title {
+        letter-spacing: -0.02em;
+    }
+
+    .metadataItem {
+        padding-inline: 0;
+    }
+
+    .quickItem {
+        gap: 0.75rem;
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+    }
+
+    .roleItem {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (forced-colors: active) {
+    .quickCallLink {
+        forced-color-adjust: auto;
+    }
+}

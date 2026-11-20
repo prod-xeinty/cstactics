@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { tacticsFixtures } from "../fixtures";
 import { tacticsRepository } from "../repository";
@@ -50,5 +50,30 @@ describe("tacticsRepository", () => {
 
     expect(images.every(Boolean)).toBe(true);
     expect(new Set(images).size).toBe(tacticsFixtures.length);
+  });
+
+  it("показывает импортированные черновики в предпросмотре, вне основного каталога", async () => {
+    const filters = { map: "dust2", side: "all", teamSize: "all", band: "mid" } as const;
+    try {
+      vi.stubEnv("CSTACTICS_PAGES", undefined);
+      vi.stubEnv("NODE_ENV", "development");
+      const drafts = await tacticsRepository.listDrafts(filters);
+      expect(drafts).toHaveLength(10);
+      expect(new Set(drafts.map(({ slug }) => slug)).size).toBe(10);
+      expect(drafts.every(({ status }) => status === "draft")).toBe(true);
+      expect(await tacticsRepository.listDrafts({ ...filters, side: "CT" })).toHaveLength(4);
+      await expect(tacticsRepository.bySlug(drafts[0].slug)).resolves.toMatchObject({ status: "draft" });
+      expect((await tacticsRepository.list(filters)).every(({ status }) => status === "published")).toBe(true);
+
+      vi.stubEnv("NODE_ENV", "production");
+      await expect(tacticsRepository.listDrafts(filters)).resolves.toEqual([]);
+      await expect(tacticsRepository.bySlug(drafts[0].slug)).resolves.toBeNull();
+
+      vi.stubEnv("CSTACTICS_PAGES", "1");
+      await expect(tacticsRepository.listDrafts(filters)).resolves.toEqual(drafts);
+      await expect(tacticsRepository.bySlug(drafts[0].slug)).resolves.toMatchObject({ status: "draft" });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

@@ -1,20 +1,21 @@
 import { tacticsFixtures } from "./fixtures";
-import { sortTacticsForBand } from "./filter";
+import { matchesTacticFilters, sortTacticsForBand } from "./filter";
 import type { Tactic, TacticFilters, TacticSummary } from "./model";
 
 export interface TacticsRepository {
   list(filters: TacticFilters): Promise<TacticSummary[]>;
+  listDrafts(filters: TacticFilters): Promise<TacticSummary[]>;
   featured(filters: TacticFilters): Promise<TacticSummary | null>;
   bySlug(slug: string): Promise<Tactic | null>;
 }
 
 const clone = <Value>(value: Value): Value => structuredClone(value);
 
-const matchesFilters = (tactic: Tactic, filters: TacticFilters) =>
-  tactic.status === "published" &&
-  tactic.map === filters.map &&
-  (filters.side === "all" || tactic.side === filters.side) &&
-  (filters.teamSize === "all" || tactic.teamSize === filters.teamSize);
+async function loadPreviewDrafts(): Promise<readonly Tactic[]> {
+  if (process.env.NODE_ENV !== "development" && process.env.CSTACTICS_PAGES !== "1") return [];
+  const { importedTactics } = await import("./imported-tactics");
+  return importedTactics;
+}
 
 const toSummary = (tactic: Tactic): TacticSummary => {
   return clone({
@@ -41,15 +42,19 @@ const toSummary = (tactic: Tactic): TacticSummary => {
 export const tacticsRepository: TacticsRepository = {
   async list(filters) {
     const summaries = tacticsFixtures
-      .filter((tactic) => matchesFilters(tactic, filters))
+      .filter((tactic) => tactic.status === "published" && matchesTacticFilters(tactic, filters))
       .map(toSummary);
 
     return sortTacticsForBand(summaries, filters.band);
   },
 
+  async listDrafts(filters) {
+    return (await loadPreviewDrafts()).filter((tactic) => matchesTacticFilters(tactic, filters)).map(toSummary);
+  },
+
   async featured(filters) {
     const summaries = tacticsFixtures
-      .filter((tactic) => tactic.featured && matchesFilters(tactic, filters))
+      .filter((tactic) => tactic.status === "published" && tactic.featured && matchesTacticFilters(tactic, filters))
       .map(toSummary);
 
     return sortTacticsForBand(summaries, filters.band)[0] ?? null;
@@ -58,7 +63,7 @@ export const tacticsRepository: TacticsRepository = {
   async bySlug(slug) {
     const tactic = tacticsFixtures.find(
       (candidate) => candidate.slug === slug && candidate.status === "published",
-    );
+    ) ?? (await loadPreviewDrafts()).find((candidate) => candidate.slug === slug);
 
     return tactic ? clone(tactic) : null;
   },

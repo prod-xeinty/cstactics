@@ -3,12 +3,23 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { QuickCallMode } from "@/features/quick-call/QuickCallMode";
+import { parseTacticFilters } from "@/tactics/filter";
 import { tacticsRepository } from "@/tactics/repository";
 
 import styles from "./page.module.css";
 
 interface QuickCallPageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateStaticParams() {
+  const filters = parseTacticFilters({});
+  const [tactics, drafts] = await Promise.all([
+    tacticsRepository.list(filters),
+    tacticsRepository.listDrafts(filters),
+  ]);
+
+  return [...tactics, ...drafts].map(({ slug }) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: QuickCallPageProps): Promise<Metadata> {
@@ -35,7 +46,7 @@ export default async function QuickCallPage({ params }: QuickCallPageProps) {
     <div className={`site-shell ${styles.page}`}>
       <header className={styles.header}>
         <Link href="/">← К рекомендациям</Link>
-        <p>Freeze time · Dust2</p>
+        <p>{tactic.status === "draft" ? "Dust2 · на проверке в игре" : "Freeze time · Dust2"}</p>
         <h2>{tactic.title}</h2>
       </header>
       <QuickCallMode tactic={tactic} alternativeSlug={alternativeSlug} />

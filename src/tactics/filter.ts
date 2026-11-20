@@ -35,6 +35,12 @@ export function parseTacticFilters(params: FilterParams): TacticFilters {
   return tacticFiltersSchema.parse(readParams(params));
 }
 
+export function matchesTacticFilters(tactic: TacticSummary, filters: TacticFilters): boolean {
+  return tactic.map === filters.map &&
+    (filters.side === "all" || tactic.side === filters.side) &&
+    (filters.teamSize === "all" || tactic.teamSize === filters.teamSize);
+}
+
 export function sortTacticsForBand(
   tactics: readonly TacticSummary[],
   band: FaceitBand,
